@@ -157,10 +157,25 @@ div.card-body .btn-enviar:hover {
             ?>
         </div>
     </div>
+<?php
+// Consulta para verificar si el usuario tiene una solicitud de verificación pendiente
+$query_verificacion = "SELECT * FROM verificaciones WHERE usuario_id = ?";
+$stmt_verificacion = $conexion->prepare($query_verificacion);
+$stmt_verificacion->bind_param("i", $id_usuario_mostrar);
+$stmt_verificacion->execute();
+$result_verificacion = $stmt_verificacion->get_result();
+$esperando_verificacion = ($result_verificacion->num_rows > 0);
+$stmt_verificacion->close();
+?>
 
 	<!-- Formulario de verificación -->
+	<?php if ($id_usuario_mostrar == $_SESSION["id"]): ?>
 	<div class="container-verification">
 		<?php if ($usuario["verificado"] == 0): ?>
+			<?php if ($esperando_verificacion): ?>
+				
+				<div class="text-center"><div class="alert alert-info mt-4">Esperando verificación.</div></div>
+			<?php else: ?>
 			<div class="card mt-4">
 				<div class="card-header text-white text-center">
 					<b>Verifica tu cuenta</b>
@@ -189,7 +204,10 @@ div.card-body .btn-enviar:hover {
 						</div>
 					</form>
 				</div>
-			</div><br>
+			</div>
+			<?php endif; ?>
+<?php endif; ?>
+<br>
 			<?php
         // Muestra el mensaje de error o éxito
         if (isset($_GET['error'])) {
@@ -200,8 +218,10 @@ div.card-body .btn-enviar:hover {
             echo '<div class="alert alert-success">' . htmlspecialchars($_GET['mensaje']) . '</div>';
         }
         ?>
-		<?php endif; ?>
+		
 		</div>
+		<?php endif; ?>
+
 		</div>
         <!-- Tarjeta del lado derecho (perfil de usuario y ofertas de alquiler) -->
         <div class="col-md-9">
@@ -261,4 +281,3 @@ div.card-body .btn-enviar:hover {
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.min.js"></script>
 </body>
 </html>
-
