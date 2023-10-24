@@ -36,6 +36,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['user_id']) && isset($_
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['eliminar_usuario'])) {
     $user_id = $_POST['eliminar_usuario'];
 
+
+	    // Eliminar respuestas asociadas a las reseñas del usuario
+    $query = "DELETE FROM respuestas WHERE id_resena IN (SELECT id FROM resenia WHERE id_usuario = ?)";
+    $stmt = mysqli_prepare($conexion, $query);
+    if ($stmt) {
+        mysqli_stmt_bind_param($stmt, "i", $user_id);
+        mysqli_stmt_execute($stmt);
+        mysqli_stmt_close($stmt);
+    }
+
+
     // Eliminar reseñas asociadas al usuario
     $query = "DELETE FROM resenia WHERE id_usuario = ?";
     $stmt = mysqli_prepare($conexion, $query);
@@ -170,9 +181,26 @@ $result = mysqli_query($conexion, $query);
     </div>
 
     <!-- Modal -->
-    <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
-        <!-- ... (contenido del modal) -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteModalLabel">Confirmar Eliminación</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                ¿Estás seguro de que deseas eliminar esta cuenta de usuario?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <form method="post">
+                    <input type="hidden" name="eliminar_usuario" id="deleteUserId">
+                    <button type="submit" class="btn btn-danger">Eliminar</button>
+                </form>
+            </div>
+        </div>
     </div>
+</div>
 
     <?php include('footer.php'); ?>
 
