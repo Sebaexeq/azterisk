@@ -63,11 +63,39 @@
         $fecha_fin = $_POST["fecha_fin"];
 
         $usuario_id = $_SESSION["id"];
-        $sql = "INSERT INTO alquileres (usuario_id, titulo, descripcion, ubicacion, etiquetas, costo_alquiler, tiempo_minimo, tiempo_maximo, cupo, fecha_inicio, fecha_fin, activa) 
-                VALUES ('$usuario_id', '$titulo', '$descripcion', '$ubicacion', '$etiquetas', '$costo_alquiler', '$tiempo_minimo', '$tiempo_maximo', '$cupo', '$fecha_inicio', '$fecha_fin', 1)";
+		// Verificar si el usuario está verificado
+		$consulta_verificado = "SELECT verificado FROM usuarios WHERE id = $usuario_id";
+		$resultado_verificado = mysqli_query($conexion, $consulta_verificado);
+		$usuario = mysqli_fetch_assoc($resultado_verificado);
+		
+		if ($usuario['verificado'] == 0) { // Si el usuario NO está verificado
+		// Verificar si el usuario ya tiene una oferta activa
+		$consulta_oferta_activa = "SELECT COUNT(*) as total FROM alquileres WHERE usuario_id = $usuario_id AND activa = 1";
+		$resultado_oferta_activa = mysqli_query($conexion, $consulta_oferta_activa);
+		$oferta_activa = mysqli_fetch_assoc($resultado_oferta_activa);
+		
+		if ($oferta_activa['total'] > 0) { 
+			echo '<div class="alert alert-danger mt-4" role="alert">';
+			echo "Ya tienes una oferta activa. No puedes crear otra hasta que la oferta actual expire o la desactives.";
+			echo '</div>';
+			exit; // Detener la ejecución del script
+		}
+
+		$sql = "INSERT INTO alquileres (usuario_id, titulo, descripcion, ubicacion, etiquetas, costo_alquiler, tiempo_minimo, tiempo_maximo, cupo, fecha_inicio, fecha_fin, activa) 
+		VALUES ('$usuario_id', '$titulo', '$descripcion', '$ubicacion', '$etiquetas', '$costo_alquiler', '$tiempo_minimo', '$tiempo_maximo', '$cupo', '$fecha_inicio', '$fecha_fin', 0)";
+	} else { // Si el usuario ESTÁ verificado
+		$sql = "INSERT INTO alquileres (usuario_id, titulo, descripcion, ubicacion, etiquetas, costo_alquiler, tiempo_minimo, tiempo_maximo, cupo, fecha_inicio, fecha_fin, activa) 
+		VALUES ('$usuario_id', '$titulo', '$descripcion', '$ubicacion', '$etiquetas', '$costo_alquiler', '$tiempo_minimo', '$tiempo_maximo', '$cupo', '$fecha_inicio', '$fecha_fin', 1)";
+	}
+
 
         if (mysqli_query($conexion, $sql)) {
             $id_oferta = mysqli_insert_id($conexion);
+
+			// Verificar si el usuario es regular o verificado
+			$consulta_usuario = "SELECT verificado FROM usuarios WHERE id = $usuario_id";
+			$resultado_usuario = mysqli_query($conexion, $consulta_usuario);
+			$usuario = mysqli_fetch_assoc($resultado_usuario);
 
             $galeria_fotos = array();
 
