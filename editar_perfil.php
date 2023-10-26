@@ -11,7 +11,16 @@ if (!isset($_SESSION["id"])) {
 $mensaje = "";
 $mensaje_clase = "";
 
-$usuario_id = $_SESSION["id"];
+$usuario_id = $_SESSION['id']; // Asumiendo que el ID del usuario está almacenado en la sesión
+$sql = "SELECT verificado FROM usuarios WHERE id = ?";
+$stmt = $conexion->prepare($sql);
+$stmt->bind_param("i", $usuario_id);
+$stmt->execute();
+$result = $stmt->get_result();
+$row = $result->fetch_assoc();
+$esVerificado = $row['verificado'];
+$stmt->close();
+
 
 $sql = "SELECT nombre, apellido, email, foto_perfil, bio, intereses FROM usuarios WHERE id = ?";
 if ($stmt = mysqli_prepare($conexion, $sql)) {
@@ -41,7 +50,7 @@ function uploadProfilePicture($file) {
         return false;
     }
 
-    if ($file["size"] > 500000) {
+    if ($file["size"] > 2000000) {
         return false;
     }
 
@@ -80,6 +89,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $_SESSION["nombre"] = $nombre_nuevo;
                 $_SESSION["apellido"] = $apellido_nuevo;
                 $_SESSION["email"] = $email_nuevo;
+				// Establecer el estado de verificación del usuario a "no verificado" y la fecha de vencimiento a null
+				$sql_verificacion = "UPDATE usuarios SET verificado = 0, fecha_verificacion = NULL WHERE id = ?";
+				if ($stmt_verificacion = mysqli_prepare($conexion, $sql_verificacion)) {
+					mysqli_stmt_bind_param($stmt_verificacion, "i", $usuario_id);
+					mysqli_stmt_execute($stmt_verificacion);
+					mysqli_stmt_close($stmt_verificacion);
+				}
             } else {
                 $mensaje = "Hubo un problema al actualizar la información de perfil. Inténtalo nuevamente.";
                 $mensaje_clase = "error";
@@ -98,6 +114,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $_SESSION["nombre"] = $nombre_nuevo;
                 $_SESSION["apellido"] = $apellido_nuevo;
                 $_SESSION["email"] = $email_nuevo;
+				// Establecer el estado de verificación del usuario a "no verificado" y la fecha de vencimiento a null
+				$sql_verificacion = "UPDATE usuarios SET verificado = 0, fecha_verificacion = NULL WHERE id = ?";
+				if ($stmt_verificacion = mysqli_prepare($conexion, $sql_verificacion)) {
+					mysqli_stmt_bind_param($stmt_verificacion, "i", $usuario_id);
+					mysqli_stmt_execute($stmt_verificacion);
+					mysqli_stmt_close($stmt_verificacion);
+				}
+
             } else {
                 $mensaje = "Hubo un problema al actualizar la información de perfil. Inténtalo nuevamente.";
                 $mensaje_clase = "error";
@@ -179,6 +203,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 <label for="confirmar_contraseña" class="form-label">Confirmar Contraseña</label>
                 <input type="password" class="form-control" id="confirmar_contraseña" name="confirmar_contraseña">
             </div>
+			<?php if($esVerificado == 1): ?>
+			<div class="alert alert-warning mt-3" role="alert">
+				Si modificas algún dato, deberás volver a realizar el proceso de verificación.
+			</div>
+			<?php endif; ?>
 			<div class="text-center">
                 <button type="submit" class="btn btn-primary">Actualizar</button>
 			</div>
