@@ -81,6 +81,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['eliminar_usuario'])) {
 // Obtener la lista de usuarios registrados
 $query = "SELECT id, nombre, apellido, email, verificado, fecha_verificacion FROM usuarios";
 $result = mysqli_query($conexion, $query);
+
+$fecha_manana = date("Y-m-d", strtotime("+1 day"));
 ?>
 
 <!DOCTYPE html>
@@ -161,7 +163,7 @@ $result = mysqli_query($conexion, $query);
                     echo '</select>';
                     echo '<div class="mb-3">';
                     echo '<label for="fecha_verificacion" class="form-label">Fecha de Vencimiento:</label>';
-                    echo '<input type="date" class="form-control" name="fecha_verificacion" value="' . $row['fecha_verificacion'] . '">';
+                    echo '<input type="date" class="form-control" name="fecha_verificacion" value="' . (empty($row['fecha_verificacion']) ? $fecha_manana : $row['fecha_verificacion']) . '" min="' . $fecha_manana . '">';
                     echo '</div>';
                     echo '<div class="text-center">';
                     echo '<button type="submit" class="btn btn-primary">Guardar</button>';
@@ -170,7 +172,15 @@ $result = mysqli_query($conexion, $query);
                     
                     // Agregar botón para ver ofertas del usuario
                     echo '<a href="ver_ofertas.php?user_id=' . $row['id'] . '" class="btn btn-info">Ver Ofertas</a>';
-                    
+                    // Agregar el botón "Ver solicitud" aquí
+					$query_verificacion = "SELECT * FROM verificaciones WHERE usuario_id = " . $row['id'];
+					$result_verificacion = mysqli_query($conexion, $query_verificacion);
+					if (mysqli_num_rows($result_verificacion) > 0) {
+						echo '<a href="ver_solicitud.php?usuario_id=' . $row['id'] . '" class="btn btn-warning">Ver Solicitud</a>';
+					} else {
+						// Si no hay solicitud, mostrar el botón en gris y deshabilitado
+						echo '<a href="#" class="btn btn-warning disabled">Ver Solicitud</a>';
+					}
                     echo '</div>';
                     echo "</td>";
                     echo "</tr>";
@@ -201,7 +211,6 @@ $result = mysqli_query($conexion, $query);
         </div>
     </div>
 </div>
-
     <?php include('footer.php'); ?>
 
     <script>
@@ -214,6 +223,7 @@ $result = mysqli_query($conexion, $query);
             modalInput.value = userId;
         });
     </script>
+	
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.min.js"></script>
