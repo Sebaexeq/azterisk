@@ -15,6 +15,8 @@
 <?php
 require_once('config.php');
 require_once('header.php');
+$id_oferta = null;
+
 // Función para mostrar las estrellas
 function mostrarEstrellas($puntuacion) {
     $estrellas = '';
@@ -47,6 +49,39 @@ if (isset($_GET["id"]) && is_numeric($_GET["id"])) {
             }
         }
     }
+
+	// Verificar si el usuario puede dejar una reseña basado en la fecha de finalización
+	$usuario_id = $_SESSION['id'];
+	$query = "SELECT aplicaciones_alquiler.alquiler_id, alquileres.titulo 
+			FROM aplicaciones_alquiler 
+			INNER JOIN alquileres ON aplicaciones_alquiler.alquiler_id = alquileres.id 
+			WHERE aplicaciones_alquiler.usuario_id = ? AND aplicaciones_alquiler.alquiler_id = ? AND aplicaciones_alquiler.fecha_fin >= CURDATE()";
+	$stmt = $conexion->prepare($query);
+	$stmt->bind_param("ii", $usuario_id, $id_oferta);
+	$stmt->execute();
+	$result = $stmt->get_result();
+	
+	$puedeResenar = false;
+	if ($row = $result->fetch_assoc()) {
+		$alquiler_id = $row['alquiler_id'];
+		$titulo_alquiler = $row['titulo'];
+	
+		// Ahora, verifica si ya existe una reseña del usuario para esa oferta de alquiler
+		$query_resena = "SELECT id FROM resenia WHERE id_usuario = ? AND id_oferta = ?";
+		$stmt_resena = $conexion->prepare($query_resena);
+		$stmt_resena->bind_param("ii", $usuario_id, $alquiler_id);
+		$stmt_resena->execute();
+		$result_resena = $stmt_resena->get_result();
+	
+		// Si no hay resultados, significa que el usuario aún no ha dejado una reseña
+		if (!$result_resena->fetch_assoc()) {
+			$puedeResenar = true;
+		}
+	
+		$stmt_resena->close();
+	}
+	$stmt->close();
+
 
     // Si se presiona el botón "Eliminar Reseña"
     if (isset($_GET["action"]) && $_GET["action"] == "deleteReview" && isset($_GET["reviewId"]) && is_numeric($_GET["reviewId"])) {
@@ -108,6 +143,15 @@ if (isset($_GET["id"]) && is_numeric($_GET["id"])) {
                     $esPropietario = true;
                 }
 
+				// Verificar si la oferta está inactiva y el usuario no es el propietario
+				if ($fila['activa'] == 0 && !$esPropietario) {
+					echo '<div class="container mt-4">';
+					echo '<div class="alert alert-danger" role="alert">Esta oferta de alquiler a la que intentas acceder está inactiva.</div>';
+					echo '</div>';
+					include('footer.php');
+					exit(); // Termina la ejecución del script aquí
+				}
+
                 echo '<div class="container mt-4">';
 				echo '<h1>' . htmlspecialchars($fila["titulo"]) . '</h1>';
 				echo '<p><strong>Puntuación general:</strong> ' . mostrarEstrellas($puntuacion_general) . '</p>'; // Mostrar puntuación general
@@ -118,8 +162,6 @@ if (isset($_GET["id"]) && is_numeric($_GET["id"])) {
                 echo '<p><strong>Tiempo Mínimo de Permanencia:</strong> ' . $fila["tiempo_minimo"] . ' días</p>';
                 echo '<p><strong>Tiempo Máximo de Permanencia:</strong> ' . $fila["tiempo_maximo"] . ' días</p>';
                 echo '<p><strong>Cupo de Personas:</strong> ' . $fila["cupo"] . '</p>';
-                echo '<p><strong>Fecha de Inicio:</strong> ' . ($fila["fecha_inicio"] ? date("d/m/Y", strtotime($fila["fecha_inicio"])) : "No especificada") . '</p>';
-                echo '<p><strong>Fecha de Fin:</strong> ' . ($fila["fecha_fin"] ? date("d/m/Y", strtotime($fila["fecha_fin"])) : "No especificada") . '</p>';
 				// Mostrar servicios incluidos
                 $servicios_incluidos = json_decode($fila['servicios'], true);
                 echo '<h3>Servicios incluidos:</h3>';
@@ -133,9 +175,83 @@ if (isset($_GET["id"]) && is_numeric($_GET["id"])) {
                 }
                 echo '</ul>';
 
-                echo '</div>';
-                echo '</div>';
+				// Verificar si el usuario actual es el propietario de la oferta
+				if ($esPropietario) {
+					// Obtener las solicitudes pendientes relacionadas con este alquiler
+					$query_solicitudes = "SELECT aplicaciones_alquiler.id, usuarios.nombre AS nombre_solicitante, aplicaciones_alquiler.fecha_aplicacion FROM aplicaciones_alquiler 
+										INNER JOIN usuarios ON aplicaciones_alquiler.usuario_id = usuarios.id 
+										WHERE aplicaciones_alquiler.alquiler_id = ? AND aplicaciones_alquiler.estado = 'pendiente'";
+					$stmt_solicitudes = $conexion->prepare($query_solicitudes);
+					$stmt_solicitudes->bind_param("i", $id_oferta);
+					$stmt_solicitudes->execute();
+					$result_solicitudes = $stmt_solicitudes->get_result();
+				
+					echo "<h2>Solicitudes pendientes</h2>";
+				
+					if ($result_solicitudes->num_rows > 0) {
+						echo "<table class='table'>";
+						echo "<thead><tr><th>Nombre del solicitante</th><th>Fecha de solicitud</th><th>Acciones</th></tr></thead>";
+						echo "<tbody>";
+				
+						while ($row_solicitud = $result_solicitudes->fetch_assoc()) {
+							echo "<tr>";
+							echo "<td>" . htmlspecialchars($row_solicitud['nombre_solicitante']) . "</td>";
+							echo "<td>" . htmlspecialchars($row_solicitud['fecha_aplicacion']) . "</td>";
+							echo "<td>";
+							echo "<a href='aceptar_solicitud.php?id=" . $row_solicitud['id'] . "' class='btn btn-success'>Aceptar</a> ";
+							echo "<a href='rechazar_solicitud.php?id=" . $row_solicitud['id'] . "' class='btn btn-danger'>Rechazar</a>";
+							echo "</td>";
+							echo "</tr>";
+						}
+				
+						echo "</tbody>";
+						echo "</table>";
+					} else {
+						echo "<p>No hay solicitudes pendientes.</p>";
+					}
+				
+					$stmt_solicitudes->close();
+				}
 
+
+                echo '</div>';
+                echo '</div>';
+				
+				
+
+				
+				$usuario_id = $_SESSION['id'];
+				$alquiler_id = $id_oferta;
+
+				
+				// Verificar si el usuario está logueado y no es el propietario de la oferta
+				if (isset($_SESSION['id']) && !$esPropietario) {
+					
+					// Verificar si el usuario ya ha solicitado una reserva para este alquiler
+					$query = "SELECT id, estado, fecha_fin FROM aplicaciones_alquiler WHERE usuario_id = ? AND alquiler_id = ? AND (estado = 'pendiente' OR estado = 'aceptado')";
+					$stmt_reserva = $conexion->prepare($query);
+					$stmt_reserva->bind_param("ii", $usuario_id, $alquiler_id);
+					$stmt_reserva->execute();
+					$reserva_existente = $stmt_reserva->get_result()->fetch_assoc();
+					$stmt_reserva->close();
+					
+					echo '<div class="mt-4 text-center">';
+					
+					if (!$reserva_existente) {
+						// Muestra el botón "Reservar"
+						echo '<a href="reservar.php?id=' . $id_oferta . '" class="btn btn-success">Reservar</a>';
+					} else {
+						if ($reserva_existente["estado"] == "pendiente") {
+							echo '<div class="alert alert-warning">Tu alquiler está pendiente de aceptación.</div>';
+						} elseif ($reserva_existente["estado"] == "aceptado") {
+							echo '<div class="alert alert-success">Tu reserva fue aceptada.</div>';
+						}
+					}
+				}
+					echo '</div>';
+
+
+				
                 echo '<div class="container mt-4 text-center">';
                 echo '<div class="btn-group" role="group" aria-label="Botones">';
 
@@ -180,7 +296,7 @@ if (isset($_GET["id"]) && is_numeric($_GET["id"])) {
 </div>
                 <?php }
 
-                echo '<div class="container mt-4">';
+                echo '<div id="reseñas" class="container mt-4">';
                 echo '<h2>Reseñas</h2>';
 
                 $sql_resenas = "SELECT r.*, u.nombre FROM resenia r
@@ -203,6 +319,36 @@ if (isset($_GET["id"]) && is_numeric($_GET["id"])) {
                                 echo '<div class="card-body">';
                                 echo '<p class="card-text">' . htmlspecialchars($fila_resena["comentario"]) . '</p>';
                                 echo '</div>';
+								$sql_respuesta = "SELECT respuesta FROM respuestas WHERE id_resena = ?";
+								if ($stmt_respuesta = mysqli_prepare($conexion, $sql_respuesta)) {
+									mysqli_stmt_bind_param($stmt_respuesta, "i", $fila_resena['id']);
+									if (mysqli_stmt_execute($stmt_respuesta)) {
+										$resultado_respuesta = mysqli_stmt_get_result($stmt_respuesta);
+										if ($fila_respuesta = mysqli_fetch_assoc($resultado_respuesta)) {
+											echo '<div class="card-footer">';
+											echo '<strong>Respuesta del propietario:</strong> ' . htmlspecialchars($fila_respuesta["respuesta"]);
+											echo '</div>';
+										} else {
+											if (isset($_SESSION['id']) && $_SESSION['id'] == $fila['usuario_id']) {
+												echo "
+												<div class='mt-3 border rounded p-3'>  <!-- Añade estas clases para el estilo de cuadro -->
+													<h5>Responder a esta reseña:</h5>
+													<form action='procesar_respuestas.php' method='post' class='form-inline'>
+														<input type='hidden' name='id_resena' value='" . $fila_resena['id'] . "'>
+														<input type='hidden' name='id_usuario' value='" . $_SESSION['id'] . "'>
+														<input type='hidden' name='id_oferta' value='" . $id_oferta . "'>
+														<textarea name='respuesta' placeholder='Escribe tu respuesta...' class='form-control mr-2' rows='2'></textarea>
+														<br>
+														<div class='text-center'><button type='submit' class='btn btn-primary'>Responder</button></div>
+													</form>
+													<div id='respuestaDisplay'></div>
+												</div>
+												";
+											}
+										}
+									}
+									mysqli_stmt_close($stmt_respuesta);
+								}
                                 echo '</div>';
                             }
                         } else {
@@ -212,7 +358,7 @@ if (isset($_GET["id"]) && is_numeric($_GET["id"])) {
                     }
                 }
 
-                if (isset($_SESSION['id']) && !$esPropietario && !$yaHaResenado) {
+                if (isset($_SESSION['id']) && !$esPropietario && !$yaHaResenado && $puedeResenar) {
                     echo '<div class="container mt-4">';
                     echo '<h3>Deja tu reseña</h3>';
                     echo '<form action="procesar_resena.php" method="post">';
