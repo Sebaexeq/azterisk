@@ -34,12 +34,12 @@ if ($usuario) {
     echo "Usuario no encontrado";
     exit;
 }
-
+$condicion_activa = ($id_usuario_mostrar != $_SESSION["id"]) ? "AND a.activa = 1" : "";
 $sql_alquileres = "
     SELECT a.*, AVG(r.puntuacion) as avg_puntuacion
     FROM alquileres a
     LEFT JOIN resenia r ON a.id = r.id_oferta
-    WHERE a.usuario_id = ?
+    WHERE a.usuario_id = ? $condicion_activa
     GROUP BY a.id";
 $stmt_alquileres = $conexion->prepare($sql_alquileres);
 $stmt_alquileres->bind_param("i", $id_usuario_mostrar);
@@ -251,7 +251,13 @@ $stmt_verificacion->close();
 							<?php while ($oferta = $ofertas->fetch_assoc()): ?>
 								<a href="detalles_alquiler.php?id=<?php echo $oferta["id"]; ?>" class="list-group-item list-group-item-action mb-0">
 									<div class="d-flex w-100 justify-content-between">
-										<h5 class="mb-1"><?php echo $oferta["titulo"]; ?></h5>
+										<h5 class="mb-1">
+											<?php echo $oferta["titulo"]; ?>
+											<!-- Muestra el badge si la oferta está inactiva y el usuario es el dueño del perfil -->
+											<?php if ($oferta["activa"] == 0 && $id_usuario_mostrar == $_SESSION["id"]): ?>
+												<span class="badge bg-secondary">Inactiva</span>
+											<?php endif; ?>
+										</h5>
 										<small>
 											<?php 
 											$estrellas = round($oferta["avg_puntuacion"]);
