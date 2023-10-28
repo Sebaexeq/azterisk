@@ -9,6 +9,11 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.min.js"></script>
+	<style>
+		a {
+			text-decoration: none !important;
+		}
+	</style>
 </head>
 <body>
 
@@ -16,6 +21,50 @@
 require_once('config.php');
 require_once('header.php');
 $id_oferta = null;
+
+// Obtenemos el ID del alquiler desde el parámetro GET
+$id_alquiler = isset($_GET['id']) ? intval($_GET['id']) : 0;
+
+$usuario_id = $_SESSION['id'];
+
+// Consultamos si el usuario está verificado, si tiene una oferta activa y las fechas de inicio y fin del alquiler
+$query = "SELECT u.verificado, a.fecha_publicacion, a.fecha_inicio, a.fecha_fin, a.activa 
+          FROM alquileres a 
+          JOIN usuarios u ON a.usuario_id = u.id 
+          WHERE a.id = $id_alquiler";
+
+$resultado = mysqli_query($conexion, $query);
+
+if ($resultado && mysqli_num_rows($resultado) > 0) {
+    $fila = mysqli_fetch_assoc($resultado);
+    
+    // Si el usuario es regular
+    if ($fila['verificado'] == 0) {
+        // Verificamos si el usuario ya tiene una oferta activa
+        $queryOfertaActiva = "SELECT COUNT(*) as total_activas FROM alquileres WHERE usuario_id = $usuario_id AND activa = 1";
+        $resultadoOfertaActiva = mysqli_query($conexion, $queryOfertaActiva);
+        $filaOfertaActiva = mysqli_fetch_assoc($resultadoOfertaActiva);
+        
+        if ($filaOfertaActiva['total_activas'] > 0 && $fila['activa'] == 0) {
+            echo "<div class='alert alert-danger text-center'>La oferta de alquiler está inactiva porque ya tienes una oferta de alquiler activa.</div>";
+        }
+    }
+    
+    $fecha_publicacion = new DateTime($fila['fecha_publicacion']);
+    $fecha_actual = new DateTime();
+    $diferencia = $fecha_actual->diff($fecha_publicacion);
+    
+    $fecha_inicio = isset($fila['fecha_inicio']) ? new DateTime($fila['fecha_inicio']) : null;
+    $fecha_fin = isset($fila['fecha_fin']) ? new DateTime($fila['fecha_fin']) : null;
+
+    if ($diferencia->days < 3 && $fila['verificado'] == 0) {
+        echo "<div class='alert alert-warning text-center'>Tu alquiler está inactivo porque aún no han pasado 3 días desde su fecha de publicación.</div>";
+    } elseif ($fila['activa'] == 0 && $fecha_inicio && $fecha_fin && ($fecha_actual < $fecha_inicio || $fecha_actual > $fecha_fin)) {
+    echo "<div class='alert alert-secondary text-center'>Tu oferta de alquiler está inactiva porque su rango de actividad no coincide con el de hoy.</div>";
+}
+} else {
+    echo "Error al obtener la información del alquiler o del usuario: " . mysqli_error($conexion);
+}
 
 // Función para mostrar las estrellas
 function mostrarEstrellas($puntuacion) {
@@ -157,7 +206,13 @@ if (isset($_GET["id"]) && is_numeric($_GET["id"])) {
 				echo '<p><strong>Puntuación general:</strong> ' . mostrarEstrellas($puntuacion_general) . '</p>'; // Mostrar puntuación general
 				echo '<p><strong>Descripción:</strong> ' . htmlspecialchars($fila["descripcion"]) . '</p>';
                 echo '<p><strong>Ubicación:</strong> ' . htmlspecialchars($fila["ubicacion"]) . '</p>';
-                echo '<p><strong>Etiquetas:</strong> ' . htmlspecialchars($fila["etiquetas"]) . '</p>';
+                $etiquetas = explode(',', $fila["etiquetas"]);
+				echo '<p><strong>Etiquetas:</strong> ';
+				foreach ($etiquetas as $q) {
+					$q = trim($q);
+					echo '<a href="buscador.php?q=' . urlencode($q) . '" class="q">#' . htmlspecialchars($q) . '</a> ';
+				}
+				echo '</p>';
                 echo '<p><strong>Costo de Alquiler por Día:</strong> $' . number_format($fila["costo_alquiler"], 2) . '</p>';
                 echo '<p><strong>Tiempo Mínimo de Permanencia:</strong> ' . $fila["tiempo_minimo"] . ' días</p>';
                 echo '<p><strong>Tiempo Máximo de Permanencia:</strong> ' . $fila["tiempo_maximo"] . ' días</p>';
@@ -310,7 +365,7 @@ if (isset($_GET["id"]) && is_numeric($_GET["id"])) {
                             while ($fila_resena = mysqli_fetch_assoc($resultado_resenas)) {
                                 echo '<div class="card mb-3">';
                                 echo '<div class="card-header">';
-                                echo '<strong>' . htmlspecialchars($fila_resena["nombre"]) . '</strong>';
+                                echo '<strong><a href="perfil.php?id=' . $fila_resena["id_usuario"] . '">' . htmlspecialchars($fila_resena["nombre"]) . '</a></strong>';
                                 echo ' - Puntuación: ' . mostrarEstrellas($fila_resena["puntuacion"]);
                                 if (isset($_SESSION['id']) && $_SESSION['id'] == $fila_resena['id_usuario']) {
                                     echo ' <button type="button" class="btn btn-sm btn-danger eliminar-resena-button" data-bs-toggle="modal" data-bs-target="#confirmDeleteReviewModal" data-reviewid="' . $fila_resena['id'] . '">Eliminar Reseña</button>';
@@ -449,6 +504,7 @@ mysqli_close($conexion);
         var reviewId = $(this).data('reviewid');
         $("#confirmDeleteReviewButton").attr("href", "detalles_alquiler.php?id=<?php echo $id_oferta; ?>&action=deleteReview&reviewId=" + reviewId);
     });
+	
 </script>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
