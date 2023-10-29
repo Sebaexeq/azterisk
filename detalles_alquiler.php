@@ -25,47 +25,47 @@ $id_oferta = null;
 // Obtenemos el ID del alquiler desde el parámetro GET
 $id_alquiler = isset($_GET['id']) ? intval($_GET['id']) : 0;
 
-$usuario_id = $_SESSION['id'];
-
-// Consultamos si el usuario está verificado, si tiene una oferta activa y las fechas de inicio y fin del alquiler
-$query = "SELECT u.verificado, a.fecha_publicacion, a.fecha_inicio, a.fecha_fin, a.activa 
-          FROM alquileres a 
-          JOIN usuarios u ON a.usuario_id = u.id 
-          WHERE a.id = $id_alquiler";
-
-$resultado = mysqli_query($conexion, $query);
-
-if ($resultado && mysqli_num_rows($resultado) > 0) {
-    $fila = mysqli_fetch_assoc($resultado);
-    
-    // Si el usuario es regular
-    if ($fila['verificado'] == 0) {
-        // Verificamos si el usuario ya tiene una oferta activa
-        $queryOfertaActiva = "SELECT COUNT(*) as total_activas FROM alquileres WHERE usuario_id = $usuario_id AND activa = 1";
-        $resultadoOfertaActiva = mysqli_query($conexion, $queryOfertaActiva);
-        $filaOfertaActiva = mysqli_fetch_assoc($resultadoOfertaActiva);
-        
-        if ($filaOfertaActiva['total_activas'] > 0 && $fila['activa'] == 0) {
-            echo "<div class='alert alert-danger text-center'>La oferta de alquiler está inactiva porque ya tienes una oferta de alquiler activa.</div>";
-        }
-    }
-    
-    $fecha_publicacion = new DateTime($fila['fecha_publicacion']);
-    $fecha_actual = new DateTime();
-    $diferencia = $fecha_actual->diff($fecha_publicacion);
-    
-    $fecha_inicio = isset($fila['fecha_inicio']) ? new DateTime($fila['fecha_inicio']) : null;
-    $fecha_fin = isset($fila['fecha_fin']) ? new DateTime($fila['fecha_fin']) : null;
-
-    if ($diferencia->days < 3 && $fila['verificado'] == 0) {
-        echo "<div class='alert alert-warning text-center'>Tu alquiler está inactivo porque aún no han pasado 3 días desde su fecha de publicación.</div>";
-    } elseif ($fila['activa'] == 0 && $fecha_inicio && $fecha_fin && ($fecha_actual < $fecha_inicio || $fecha_actual > $fecha_fin)) {
-    echo "<div class='alert alert-secondary text-center'>Tu oferta de alquiler está inactiva porque su rango de actividad no coincide con el de hoy.</div>";
+if(isset($_SESSION['id'])) {
+	$usuario_id = $_SESSION['id'];
+	// Consultamos si el usuario está verificado, si tiene una oferta activa y las fechas de inicio y fin del alquiler
+	$query = "SELECT u.verificado, a.fecha_publicacion, a.fecha_inicio, a.fecha_fin, a.activa 
+			FROM alquileres a 
+			JOIN usuarios u ON a.usuario_id = u.id 
+			WHERE a.id = $id_alquiler";
+	
+	$resultado = mysqli_query($conexion, $query);
+	
+	if ($resultado && mysqli_num_rows($resultado) > 0) {
+		$fila = mysqli_fetch_assoc($resultado);
+		
+		// Si el usuario es regular
+		if ($fila['verificado'] == 0) {
+			// Verificamos si el usuario ya tiene una oferta activa
+			$queryOfertaActiva = "SELECT COUNT(*) as total_activas FROM alquileres WHERE usuario_id = $usuario_id AND activa = 1";
+			$resultadoOfertaActiva = mysqli_query($conexion, $queryOfertaActiva);
+			$filaOfertaActiva = mysqli_fetch_assoc($resultadoOfertaActiva);
+			
+			if ($filaOfertaActiva['total_activas'] > 0 && $fila['activa'] == 0) {
+				echo "<div class='alert alert-danger text-center'>La oferta de alquiler está inactiva porque ya tienes una oferta de alquiler activa.</div>";
+			}
+		}
+		
+		$fecha_publicacion = new DateTime($fila['fecha_publicacion']);
+		$fecha_actual = new DateTime();
+		$diferencia = $fecha_actual->diff($fecha_publicacion);
+		
+		$fecha_inicio = isset($fila['fecha_inicio']) ? new DateTime($fila['fecha_inicio']) : null;
+		$fecha_fin = isset($fila['fecha_fin']) ? new DateTime($fila['fecha_fin']) : null;
+	
+		if ($diferencia->days < 3 && $fila['verificado'] == 0) {
+			echo "<div class='alert alert-warning text-center'>Tu alquiler está inactivo porque aún no han pasado 3 días desde su fecha de publicación.</div>";
+		} elseif ($fila['activa'] == 0 && $fecha_inicio && $fecha_fin && ($fecha_actual < $fecha_inicio || $fecha_actual > $fecha_fin)) {
+		echo "<div class='alert alert-secondary text-center'>Tu oferta de alquiler está inactiva porque su rango de actividad no coincide con el de hoy.</div>";
+	}
+	} else {
+		echo "Error al obtener la información del alquiler o del usuario: " . mysqli_error($conexion);
+	}
 }
-} else {
-    echo "Error al obtener la información del alquiler o del usuario: " . mysqli_error($conexion);
-}
-
 // Función para mostrar las estrellas
 function mostrarEstrellas($puntuacion) {
     $estrellas = '';
@@ -354,7 +354,7 @@ if (isset($_GET["id"]) && is_numeric($_GET["id"])) {
                 echo '<div id="reseñas" class="container mt-4">';
                 echo '<h2>Reseñas</h2>';
 
-                $sql_resenas = "SELECT r.*, u.nombre FROM resenia r
+                $sql_resenas = "SELECT r.*, u.nombre, u.foto_perfil FROM resenia r
                                 INNER JOIN usuarios u ON r.id_usuario = u.id
                                 WHERE r.id_oferta = ?";
                 if ($stmt_resenas = mysqli_prepare($conexion, $sql_resenas)) {
@@ -365,6 +365,7 @@ if (isset($_GET["id"]) && is_numeric($_GET["id"])) {
                             while ($fila_resena = mysqli_fetch_assoc($resultado_resenas)) {
                                 echo '<div class="card mb-3">';
                                 echo '<div class="card-header">';
+								echo '<img src="' . htmlspecialchars($fila_resena["foto_perfil"]) . '" alt="Foto de perfil" style="width: 30px; height: 30px; border-radius: 50%; margin-right: 10px;">';
                                 echo '<strong><a href="perfil.php?id=' . $fila_resena["id_usuario"] . '">' . htmlspecialchars($fila_resena["nombre"]) . '</a></strong>';
                                 echo ' - Puntuación: ' . mostrarEstrellas($fila_resena["puntuacion"]);
                                 if (isset($_SESSION['id']) && $_SESSION['id'] == $fila_resena['id_usuario']) {
