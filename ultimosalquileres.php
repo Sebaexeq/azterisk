@@ -54,7 +54,9 @@
 		z-index: 10; /* Un valor más alto que cualquier otro elemento con el que pueda solaparse */
         color: #FFF;
     }
-
+	a {
+			text-decoration: none !important;
+		}
 </style>
 
 <?php
@@ -111,7 +113,7 @@ function mostrarAlquiler($fila, $badge = null) {
     $titulo = $fila['titulo'];
     $descripcion = $fila['descripcion'];
     $ubicacion = $fila['ubicacion'];
-    $etiquetas = $fila['etiquetas'];
+    $etiquetas = explode(',', $fila["etiquetas"]);
     $nombreUsuario = $fila['nombre'] . ' ' . $fila['apellido'];
     $galeriaFotos = json_decode($fila['galeria_fotos']);
     $idAlquiler = $fila['id'];
@@ -140,7 +142,12 @@ function mostrarAlquiler($fila, $badge = null) {
     echo '<h5 class="card-title">' . $titulo . '</h5>';
     echo '<p class="card-text text-clamp">' . $descripcion . '</p>';
     echo '<p class="card-text"><strong>Ubicación:</strong> ' . $ubicacion . '</p>';
-    echo '<p class="card-text"><strong>Etiquetas:</strong> ' . $etiquetas . '</p>';
+    echo '<p><strong>Etiquetas:</strong> ';
+				foreach ($etiquetas as $q) {
+					$q = trim($q);
+					echo '<a href="buscador.php?q=' . urlencode($q) . '" class="q">#' . htmlspecialchars($q) . '</a> ';
+				}
+				echo '</p>';
     echo '<p class="card-text"><strong>Publicado por:</strong> ' . $nombreUsuario . '</p>';
     echo '<div class="text-center">';
     echo '<a href="detalles_alquiler.php?id=' . $idAlquiler . '" class="btn btn-primary">Ver Detalles</a>';
