@@ -55,8 +55,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     } else {
         $error_message = "Error de preparación de la consulta.";
     }
-
-    mysqli_close($conexion);
 }
 ?>
 
@@ -135,9 +133,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
                             <div class="text-center">
 								<button type="submit" class="btn btn-primary">Iniciar Sesión</button>
-							</div>
-							<div class="text-center mt-3">
-								<a href="recuperar.php">Recuperar Contraseña</a>
 							</div>
                         </form>
                     </div>
