@@ -11,7 +11,7 @@
     // Incluye el archivo de configuración de la base de datos y el encabezado
     require_once('config.php');
     require_once('header.php');
-
+	$fecha_actual = date("Y-m-d");
     // Verificar si el usuario ha iniciado sesión
     if (!isset($_SESSION["id"])) {
         // Si el usuario no ha iniciado sesión, redirigirlo a la página de inicio de sesión
@@ -76,16 +76,17 @@
 		
 		if ($oferta_activa['total'] > 0) { 
 			echo '<div class="alert alert-danger mt-4" role="alert">';
-			echo "Ya tienes una oferta activa. No puedes crear otra hasta que la oferta actual expire o la desactives.";
+			echo "<div class='text-center'>Ya tienes una oferta activa. No puedes crear otra hasta que la oferta actual expire o la desactives.</div>";
 			echo '</div>';
+			require_once('footer.php');
 			exit; // Detener la ejecución del script
 		}
-
-		$sql = "INSERT INTO alquileres (usuario_id, titulo, descripcion, ubicacion, etiquetas, costo_alquiler, tiempo_minimo, tiempo_maximo, cupo, fecha_inicio, fecha_fin, activa) 
-		VALUES ('$usuario_id', '$titulo', '$descripcion', '$ubicacion', '$etiquetas', '$costo_alquiler', '$tiempo_minimo', '$tiempo_maximo', '$cupo', '$fecha_inicio', '$fecha_fin', 0)";
+		$fecha_actual = date('Y-m-d H:i:s');
+		$sql = "INSERT INTO alquileres (usuario_id, titulo, descripcion, ubicacion, etiquetas, costo_alquiler, tiempo_minimo, tiempo_maximo, cupo, fecha_inicio, fecha_fin, activa, fecha_publicacion) 
+		VALUES ('$usuario_id', '$titulo', '$descripcion', '$ubicacion', '$etiquetas', '$costo_alquiler', '$tiempo_minimo', '$tiempo_maximo', '$cupo', '$fecha_inicio', '$fecha_fin', 0, '$fecha_actual')";
 	} else { // Si el usuario ESTÁ verificado
-		$sql = "INSERT INTO alquileres (usuario_id, titulo, descripcion, ubicacion, etiquetas, costo_alquiler, tiempo_minimo, tiempo_maximo, cupo, fecha_inicio, fecha_fin, activa) 
-		VALUES ('$usuario_id', '$titulo', '$descripcion', '$ubicacion', '$etiquetas', '$costo_alquiler', '$tiempo_minimo', '$tiempo_maximo', '$cupo', '$fecha_inicio', '$fecha_fin', 1)";
+		$sql = "INSERT INTO alquileres (usuario_id, titulo, descripcion, ubicacion, etiquetas, costo_alquiler, tiempo_minimo, tiempo_maximo, cupo, fecha_inicio, fecha_fin, activa, fecha_publicacion) 
+		VALUES ('$usuario_id', '$titulo', '$descripcion', '$ubicacion', '$etiquetas', '$costo_alquiler', '$tiempo_minimo', '$tiempo_maximo', '$cupo', '$fecha_inicio', '$fecha_fin', 1, '$fecha_actual')";
 	}
 
 
@@ -142,7 +143,7 @@
                 mysqli_stmt_close($stmt);
             }
 
-            echo '<div class="alert alert-success" role="alert">La oferta se ha creado exitosamente.</div>';
+            echo '<div class="alert alert-success text-center" role="alert">La oferta se ha creado exitosamente.</div>';
         } else {
             echo '<div class="alert alert-danger" role="alert">Error al crear la oferta: ' . mysqli_error($conexion) . '</div>';
         }
@@ -194,12 +195,12 @@
 
             <div class="form-group">
                 <label for="fecha_inicio">Fecha de Inicio (opcional)</label>
-                <input type="date" class="form-control" id="fecha_inicio" name="fecha_inicio">
+                <input type="date" class="form-control" id="fecha_inicio" name="fecha_inicio" min="<?php echo $fecha_actual; ?>">
             </div>
 
             <div class="form-group">
                 <label for="fecha_fin">Fecha de Fin (opcional)</label>
-                <input type="date" class="form-control" id="fecha_fin" name="fecha_fin">
+                <input type="date" class="form-control" id="fecha_fin" name="fecha_fin" min="<?php echo $fecha_actual; ?>">
             </div>
 
             <div class="form-group">
