@@ -32,8 +32,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $confirmar_contrasena = $_POST["confirmar_contrasena"];
     $intereses = $_POST["intereses"];
     $biografia = $_POST["biografia"];
-    $pregunta_seguridad = $_POST["pregunta_seguridad"];
-    $respuesta_seguridad = $_POST["respuesta_seguridad"];
     $admin = false; // Valor por defecto para la columna admin
 
     // Verificar que las contraseñas coincidan
@@ -60,10 +58,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             if (move_uploaded_file($foto_perfil["tmp_name"], $ruta_archivo)) {
                 // Insertar nuevos datos de usuario en la base de datos
                 $hashed_password = password_hash($contrasena, PASSWORD_DEFAULT);
-                $sql = "INSERT INTO usuarios (nombre, apellido, email, contraseña, intereses, foto_perfil, bio, pregunta_seguridad, respuesta_seguridad, admin) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                $sql = "INSERT INTO usuarios (nombre, apellido, email, contraseña, intereses, foto_perfil, bio, admin) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 
                 if ($stmt = mysqli_prepare($conexion, $sql)) {
-                    mysqli_stmt_bind_param($stmt, "sssssssssb", $nombre, $apellido, $email, $hashed_password, $intereses, $ruta_archivo, $biografia, $pregunta_seguridad, $respuesta_seguridad, $admin);
+                    mysqli_stmt_bind_param($stmt, "sssssssb", $nombre, $apellido, $email, $hashed_password, $intereses, $ruta_archivo, $biografia, $admin);
                     if (mysqli_stmt_execute($stmt)) {
                         $mensaje = "Registro exitoso. ¡Inicia sesión ahora!";
                         $mensaje_clase = "alert-success";
@@ -81,8 +79,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $mensaje_clase = "alert-danger";
         }
     }
-    // Cerrar la conexión a la base de datos
-    mysqli_close($conexion);
 }
 ?>
 
@@ -190,16 +186,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                 <textarea class="form-control" name="biografia" rows="5"><?php echo $biografia_valor; ?></textarea>
                             </div>
 
-                            <div class="mb-3">
-                                <label for="pregunta_seguridad" class="form-label">Pregunta de Seguridad:</label>
-                                <input type="text" class="form-control" name="pregunta_seguridad" required>
-                            </div>
-
-                            <div class="mb-3">
-                                <label for="respuesta_seguridad" class="form-label">Respuesta de Seguridad:</label>
-                                <input type="text" class="form-control" name="respuesta_seguridad" required>
-                            </div>
-
                             <div class="mb-3 text-center mx-auto">
                                 <label for="foto_perfil" class="form-label">Foto de Perfil:</label>
                                 <input type="file" class="form-control-file" name="foto_perfil">
@@ -214,14 +200,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             </div>
         </div>
     </div>
-
-    <!-- Incluir el pie de página -->
     <?php require_once('footer.php'); ?>
-
-    <!-- Agregar los enlaces a los scripts de Bootstrap 5 -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.min.js"></script>
 </body>
-
 </html>
