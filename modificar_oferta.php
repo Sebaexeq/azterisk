@@ -9,6 +9,8 @@
 require_once('config.php');
 require_once('header.php');
 
+$hoy = date('Y-m-d');
+
 if (!isset($_SESSION["id"])) {
     header("Location: login.php");
     exit();
@@ -152,11 +154,11 @@ if (isset($_GET["id"]) && is_numeric($_GET["id"])) {
                         echo '</div>';
                         echo '<div class="form-group">';
                         echo '<label for="fecha_inicio">Fecha de Inicio</label>';
-                        echo '<input type="date" class="form-control" id="fecha_inicio" name="fecha_inicio" value="' . htmlspecialchars($fila["fecha_inicio"]) . '" required>';
+                        echo '<input type="date" class="form-control" id="fecha_inicio" name="fecha_inicio" value="' . htmlspecialchars($fila["fecha_inicio"]) . '" min="' . $hoy . '" required>';
                         echo '</div>';
                         echo '<div class="form-group">';
                         echo '<label for="fecha_fin">Fecha de Finalización</label>';
-                        echo '<input type="date" class="form-control" id="fecha_fin" name="fecha_fin" value="' . htmlspecialchars($fila["fecha_fin"]) . '" required>';
+                        echo '<input type="date" class="form-control" id="fecha_fin" name="fecha_fin" value="' . htmlspecialchars($fila["fecha_fin"]) . '" min="' . $hoy . '" required>';
                         echo '</div>';
 
                         // Campo para modificar servicios
