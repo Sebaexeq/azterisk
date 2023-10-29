@@ -5,6 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Buscar Oferta de Alquiler</title>
     <link href="estilos/estilo.css" rel="stylesheet">
+	<style>
+		a {
+			text-decoration: none !important;
+		}
+	</style>
 </head>
 <body>
 <?php
@@ -24,14 +29,14 @@ require_once('header.php');
 
     <?php
     if (isset($_GET['q'])) {
-        $busqueda = $_GET['q'];
+        $busqueda = mysqli_real_escape_string($conexion, $_GET['q']);
 
         // Si no se proporciona una consulta de búsqueda, selecciona todas las ofertas de alquiler activas
         if (empty($busqueda)) {
             $sql = "SELECT * FROM alquileres WHERE activa = 1";
         } else {
             $sql = "SELECT * FROM alquileres WHERE activa = 1 AND 
-                    (titulo LIKE '%" . $busqueda . "%' OR descripcion LIKE '%" . $busqueda . "%')";
+                    (titulo LIKE '%" . $busqueda . "%' OR descripcion LIKE '%" . $busqueda . "%' OR etiquetas LIKE '%" . $busqueda ."%' OR ubicacion LIKE '%" . $busqueda ."%')";
         }
 
         $resultado = mysqli_query($conexion, $sql);
@@ -52,6 +57,14 @@ require_once('header.php');
                     echo '<div class="card-body">';
                     echo '<h3 class="card-title">' . htmlspecialchars($fila["titulo"]) . '</h3>';
                     echo '<p class="card-text">' . htmlspecialchars($fila["descripcion"]) . '</p>';
+					echo '<p class="card-text"><strong>Ubicación:</strong> ' . htmlspecialchars($fila["ubicacion"]) . '</p>';
+					$etiquetas = explode(',', $fila["etiquetas"]);
+					echo '<p><strong>Etiquetas:</strong> ';
+					foreach ($etiquetas as $q) {
+						$q = trim($q);
+						echo '<a href="buscador.php?q=' . urlencode($q) . '" class="q">#' . htmlspecialchars($q) . '</a> ';
+					}
+					echo '</p>';
                     echo '<a href="detalles_alquiler.php?id=' . $fila["id"] . '" class="btn btn-primary">Ver Detalles</a>';
                     echo '</div>';
                     echo '</div>';
