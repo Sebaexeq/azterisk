@@ -40,7 +40,8 @@ $sql_alquileres = "
     FROM alquileres a
     LEFT JOIN resenia r ON a.id = r.id_oferta
     WHERE a.usuario_id = ? $condicion_activa
-    GROUP BY a.id";
+    GROUP BY a.id
+	ORDER BY a.fecha_publicacion DESC";
 $stmt_alquileres = $conexion->prepare($sql_alquileres);
 $stmt_alquileres->bind_param("i", $id_usuario_mostrar);
 $stmt_alquileres->execute();
