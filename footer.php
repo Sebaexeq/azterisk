@@ -40,5 +40,16 @@
         document.body.scrollTop = 0; // Para navegadores Safari
         document.documentElement.scrollTop = 0; // Para otros navegadores
     });
+	
+	document.addEventListener("DOMContentLoaded", function() {
+    const etiquetas = document.querySelectorAll(".etiqueta");
+    etiquetas.forEach(function(etiqueta) {
+        etiqueta.addEventListener("click", function(event) {
+            event.preventDefault();
+            const valorEtiqueta = this.textContent.replace("#", "");
+            window.location.href = "buscador.php?etiqueta=" + encodeURIComponent(valorEtiqueta);
+        });
+    });
+});
 </script>
 </body>
