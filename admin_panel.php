@@ -79,7 +79,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['eliminar_usuario'])) {
 }
 
 // Obtener la lista de usuarios registrados
-$query = "SELECT id, nombre, apellido, email, verificado, fecha_verificacion FROM usuarios";
+$query = "SELECT u.id, u.nombre, u.apellido, u.email, u.verificado, u.fecha_verificacion, 
+          CASE WHEN v.usuario_id IS NOT NULL THEN 1 ELSE 0 END AS tiene_solicitud
+          FROM usuarios u
+          LEFT JOIN verificaciones v ON u.id = v.usuario_id
+          ORDER BY tiene_solicitud DESC, u.id ASC";
 $result = mysqli_query($conexion, $query);
 
 $fecha_manana = date("Y-m-d", strtotime("+1 day"));
@@ -125,6 +129,10 @@ $fecha_manana = date("Y-m-d", strtotime("+1 day"));
         .btn-create-offer {
             margin-top: 20px;
         }
+		
+		a {
+			text-decoration: none !important;
+		}
     </style>
 </head>
 <body>
@@ -148,7 +156,7 @@ $fecha_manana = date("Y-m-d", strtotime("+1 day"));
                 <?php
                 while ($row = mysqli_fetch_assoc($result)) {
                     echo "<tr>";
-                    echo "<td>{$row['id']}</td>";
+                    echo "<td><a href='perfil.php?id={$row['id']}'>{$row['id']}</a></td>";
                     echo "<td>{$row['nombre']}</td>";
                     echo "<td>{$row['apellido']}</td>";
                     echo "<td>{$row['email']}</td>";
