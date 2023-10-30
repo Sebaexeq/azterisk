@@ -233,7 +233,7 @@ if (isset($_GET["id"]) && is_numeric($_GET["id"])) {
 				// Verificar si el usuario actual es el propietario de la oferta
 				if ($esPropietario) {
 					// Obtener las solicitudes pendientes relacionadas con este alquiler
-					$query_solicitudes = "SELECT aplicaciones_alquiler.id, usuarios.nombre AS nombre_solicitante, aplicaciones_alquiler.fecha_aplicacion FROM aplicaciones_alquiler 
+					$query_solicitudes = "SELECT aplicaciones_alquiler.id, usuarios.nombre AS nombre_solicitante, aplicaciones_alquiler.fecha_aplicacion, aplicaciones_alquiler.fecha_inicio, aplicaciones_alquiler.fecha_fin FROM aplicaciones_alquiler 
 										INNER JOIN usuarios ON aplicaciones_alquiler.usuario_id = usuarios.id 
 										WHERE aplicaciones_alquiler.alquiler_id = ? AND aplicaciones_alquiler.estado = 'pendiente'";
 					$stmt_solicitudes = $conexion->prepare($query_solicitudes);
@@ -245,17 +245,56 @@ if (isset($_GET["id"]) && is_numeric($_GET["id"])) {
 				
 					if ($result_solicitudes->num_rows > 0) {
 						echo "<table class='table'>";
-						echo "<thead><tr><th>Nombre del solicitante</th><th>Fecha de solicitud</th><th>Acciones</th></tr></thead>";
+						echo "<thead><tr><th>Nombre del solicitante</th><th>Fecha de solicitud</th><th>Fecha de ingreso</th><th>Fecha de salida</th><th>Acciones</th></tr></thead>";
 						echo "<tbody>";
 				
 						while ($row_solicitud = $result_solicitudes->fetch_assoc()) {
 							echo "<tr>";
 							echo "<td>" . htmlspecialchars($row_solicitud['nombre_solicitante']) . "</td>";
 							echo "<td>" . htmlspecialchars($row_solicitud['fecha_aplicacion']) . "</td>";
+							echo "<td>" . htmlspecialchars($row_solicitud['fecha_inicio']) . "</td>";
+							echo "<td>" . htmlspecialchars($row_solicitud['fecha_fin']) . "</td>";
 							echo "<td>";
 							echo "<a href='aceptar_solicitud.php?id=" . $row_solicitud['id'] . "' class='btn btn-success'>Aceptar</a> ";
 							echo "<a href='rechazar_solicitud.php?id=" . $row_solicitud['id'] . "' class='btn btn-danger'>Rechazar</a>";
 							echo "</td>";
+							echo "</tr>";
+						}
+				
+						echo "</tbody>";
+						echo "</table>";
+					} else {
+						echo "<p>No hay solicitudes pendientes.</p>";
+					}
+				
+					$stmt_solicitudes->close();
+				}
+				
+				
+				// Verificar si el usuario actual es el propietario de la oferta
+				if ($esPropietario) {
+					// Obtener las solicitudes aceptadas relacionadas con este alquiler
+					$query_solicitudes = "SELECT aplicaciones_alquiler.id, usuarios.nombre AS nombre_solicitante, aplicaciones_alquiler.fecha_aplicacion, aplicaciones_alquiler.fecha_inicio, aplicaciones_alquiler.fecha_fin FROM aplicaciones_alquiler 
+										INNER JOIN usuarios ON aplicaciones_alquiler.usuario_id = usuarios.id 
+										WHERE aplicaciones_alquiler.alquiler_id = ? AND aplicaciones_alquiler.estado = 'aceptado'";
+					$stmt_solicitudes = $conexion->prepare($query_solicitudes);
+					$stmt_solicitudes->bind_param("i", $id_oferta);
+					$stmt_solicitudes->execute();
+					$result_solicitudes = $stmt_solicitudes->get_result();
+				
+					echo "<h2>Solicitudes aceptadas</h2>";
+				
+					if ($result_solicitudes->num_rows > 0) {
+						echo "<table class='table'>";
+						echo "<thead><tr><th>Nombre del solicitante</th><th>Fecha de solicitud</th><th>Fecha de ingreso</th><th>Fecha de salida</th></tr></thead>";
+						echo "<tbody>";
+				
+						while ($row_solicitud = $result_solicitudes->fetch_assoc()) {
+							echo "<tr>";
+							echo "<td>" . htmlspecialchars($row_solicitud['nombre_solicitante']) . "</td>";
+							echo "<td>" . htmlspecialchars($row_solicitud['fecha_aplicacion']) . "</td>";
+							echo "<td>" . htmlspecialchars($row_solicitud['fecha_inicio']) . "</td>";
+							echo "<td>" . htmlspecialchars($row_solicitud['fecha_fin']) . "</td>";
 							echo "</tr>";
 						}
 				
