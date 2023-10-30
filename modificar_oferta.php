@@ -49,17 +49,27 @@ if (isset($_GET["id"]) && is_numeric($_GET["id"])) {
                         // Procesar y guardar las nuevas fotos del alquiler
                         $fotosSubidas = false;
                         $rutas_fotos = json_decode($fila['galeria_fotos'], true) ?: [];
-
+						function es_extension_permitida($filename) {
+							$ext = pathinfo($filename, PATHINFO_EXTENSION);
+							$extensiones_permitidas = array('jpg', 'jpeg', 'png', 'gif', 'avif', 'webp');
+							return in_array(strtolower($ext), $extensiones_permitidas);
+						}
                         if (!empty($_FILES['fotos']['name'][0])) {
-                            for ($i = 0; $i < count($_FILES['fotos']['name']); $i++) {
-                                $nombre_archivo = basename($_FILES['fotos']['name'][$i]);
-                                $ruta_destino = "galeria/" . $nombre_archivo;
-                                if (move_uploaded_file($_FILES['fotos']['tmp_name'][$i], $ruta_destino)) {
-                                    $rutas_fotos[] = $ruta_destino;
-                                    $fotosSubidas = true;
-                                }
-                            }
-                        }
+							for ($i = 0; $i < count($_FILES['fotos']['name']); $i++) {
+								if (es_extension_permitida($_FILES['fotos']['name'][$i])) {
+									$nombre_archivo = basename($_FILES['fotos']['name'][$i]);
+									$ruta_destino = "galeria/" . $nombre_archivo;
+									if (move_uploaded_file($_FILES['fotos']['tmp_name'][$i], $ruta_destino)) {
+										$rutas_fotos[] = $ruta_destino;
+										$fotosSubidas = true;
+									}
+								} else {
+									// Puedes añadir un mensaje para informar al usuario que ciertas imágenes no tienen una extensión válida.
+									echo '<div class="alert alert-danger text-center">El archivo ' . $_FILES['fotos']['name'][$i] . ' no tiene una extensión válida. Se omitió.</div>';
+								}
+							}
+						}
+
 
                         if ($fotosSubidas) {
                             $galeria_fotos_json = json_encode($rutas_fotos);
@@ -81,7 +91,7 @@ if (isset($_GET["id"]) && is_numeric($_GET["id"])) {
                                 mysqli_stmt_bind_param($stmt_update, "ssssssssssssi", $titulo, $descripcion, $ubicacion, $etiquetas, $costo_alquiler, $tiempo_minimo, $tiempo_maximo, $cupo, $fecha_inicio, $fecha_fin, $servicios_json, $galeria_fotos_json, $id_oferta);
                                 if (mysqli_stmt_execute($stmt_update)) {
                                     echo '<div class="container mt-4">';
-                                    echo '<div class="alert alert-success" role="alert">La oferta se ha actualizado exitosamente.</div>';
+                                    echo '<div class="alert alert-success text-center" role="alert">La oferta se ha actualizado exitosamente.</div>';
                                     echo '</div>';
                                 } else {
                                     echo '<div class="container mt-4">';
@@ -154,11 +164,11 @@ if (isset($_GET["id"]) && is_numeric($_GET["id"])) {
                         echo '</div>';
                         echo '<div class="form-group">';
                         echo '<label for="fecha_inicio">Fecha de Inicio</label>';
-                        echo '<input type="date" class="form-control" id="fecha_inicio" name="fecha_inicio" value="' . htmlspecialchars($fila["fecha_inicio"]) . '" min="' . $hoy . '" required>';
+                        echo '<input type="date" class="form-control" id="fecha_inicio" name="fecha_inicio" value="' . htmlspecialchars($fila["fecha_inicio"]) . '" min="' . $hoy . '">';
                         echo '</div>';
                         echo '<div class="form-group">';
                         echo '<label for="fecha_fin">Fecha de Finalización</label>';
-                        echo '<input type="date" class="form-control" id="fecha_fin" name="fecha_fin" value="' . htmlspecialchars($fila["fecha_fin"]) . '" min="' . $hoy . '" required>';
+                        echo '<input type="date" class="form-control" id="fecha_fin" name="fecha_fin" value="' . htmlspecialchars($fila["fecha_fin"]) . '" min="' . $hoy . '">';
                         echo '</div>';
 
                         // Campo para modificar servicios
