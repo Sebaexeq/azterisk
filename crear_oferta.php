@@ -8,147 +8,102 @@
 </head>
 <body>
     <?php
-    // Incluye el archivo de configuración de la base de datos y el encabezado
     require_once('config.php');
     require_once('header.php');
-	$fecha_actual = date("Y-m-d");
-    // Verificar si el usuario ha iniciado sesión
+
+    function verificarExtensionesImagenes($imagenes) {
+        $formatosPermitidos = ['jpg', 'jpeg', 'png', 'avif', 'webp'];
+
+        foreach ($imagenes["name"] as $nombre) {
+            $extension = strtolower(pathinfo($nombre, PATHINFO_EXTENSION));
+            if (!in_array($extension, $formatosPermitidos)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    $fecha_actual = date("Y-m-d");
+
     if (!isset($_SESSION["id"])) {
-        // Si el usuario no ha iniciado sesión, redirigirlo a la página de inicio de sesión
         header("Location: login.php");
         exit();
     }
 
-    // Función para redimensionar una imagen a un tamaño específico (1200x800)
-    function redimensionarImagen($imagen, $ancho, $alto)
-    {
-        list($ancho_original, $alto_original, $tipo) = getimagesize($imagen);
-
-        $ratio = $ancho_original / $alto_original;
-
-        if ($ancho / $alto > $ratio) {
-            $ancho = $alto * $ratio;
-        } else {
-            $alto = $ancho / $ratio;
-        }
-
-        $imagen_redimensionada = imagecreatetruecolor($ancho, $alto);
-
-        switch ($tipo) {
-            case IMAGETYPE_JPEG:
-                $imagen_original = imagecreatefromjpeg($imagen);
-                break;
-            case IMAGETYPE_PNG:
-                $imagen_original = imagecreatefrompng($imagen);
-                break;
-            default:
-                return false; // Tipo de imagen no soportado
-        }
-
-        imagecopyresampled($imagen_redimensionada, $imagen_original, 0, 0, 0, 0, $ancho, $alto, $ancho_original, $alto_original);
-
-        return $imagen_redimensionada;
-    }
-
     if ($_SERVER["REQUEST_METHOD"] == "POST") {
-        $titulo = $_POST["titulo"];
-        $descripcion = $_POST["descripcion"];
-        $ubicacion = $_POST["ubicacion"];
-        $etiquetas = $_POST["etiquetas"];
-        $costo_alquiler = $_POST["costo_alquiler"];
-        $tiempo_minimo = $_POST["tiempo_minimo"];
-        $tiempo_maximo = $_POST["tiempo_maximo"];
-        $cupo = $_POST["cupo"];
-        $fecha_inicio = $_POST["fecha_inicio"];
-        $fecha_fin = $_POST["fecha_fin"];
+        if (!verificarExtensionesImagenes($_FILES["fotos"])) {
+            echo '<div class="alert alert-danger text-center" role="alert">Por favor, sube imágenes en formatos válidos: jpg, jpeg, png, avif o webp.</div>';
+        } else {
+            $titulo = $_POST["titulo"];
+            $descripcion = $_POST["descripcion"];
+            $ubicacion = $_POST["ubicacion"];
+            $etiquetas = $_POST["etiquetas"];
+            $costo_alquiler = $_POST["costo_alquiler"];
+            $tiempo_minimo = $_POST["tiempo_minimo"];
+            $tiempo_maximo = $_POST["tiempo_maximo"];
+            $cupo = $_POST["cupo"];
+            $fecha_inicio = $_POST["fecha_inicio"];
+            $fecha_fin = $_POST["fecha_fin"];
 
-        $usuario_id = $_SESSION["id"];
-		// Verificar si el usuario está verificado
-		$consulta_verificado = "SELECT verificado FROM usuarios WHERE id = $usuario_id";
-		$resultado_verificado = mysqli_query($conexion, $consulta_verificado);
-		$usuario = mysqli_fetch_assoc($resultado_verificado);
-		
-		if ($usuario['verificado'] == 0) { // Si el usuario NO está verificado
-		// Verificar si el usuario ya tiene una oferta activa
-		$consulta_oferta_activa = "SELECT COUNT(*) as total FROM alquileres WHERE usuario_id = $usuario_id AND activa = 1";
-		$resultado_oferta_activa = mysqli_query($conexion, $consulta_oferta_activa);
-		$oferta_activa = mysqli_fetch_assoc($resultado_oferta_activa);
-		
-		if ($oferta_activa['total'] > 0) { 
-			echo '<div class="alert alert-danger mt-4" role="alert">';
-			echo "<div class='text-center'>Ya tienes una oferta activa. No puedes crear otra hasta que la oferta actual expire o la desactives.</div>";
-			echo '</div>';
-			require_once('footer.php');
-			exit; // Detener la ejecución del script
-		}
-		$fecha_actual = date('Y-m-d H:i:s');
-		$sql = "INSERT INTO alquileres (usuario_id, titulo, descripcion, ubicacion, etiquetas, costo_alquiler, tiempo_minimo, tiempo_maximo, cupo, fecha_inicio, fecha_fin, activa, fecha_publicacion) 
-		VALUES ('$usuario_id', '$titulo', '$descripcion', '$ubicacion', '$etiquetas', '$costo_alquiler', '$tiempo_minimo', '$tiempo_maximo', '$cupo', '$fecha_inicio', '$fecha_fin', 0, '$fecha_actual')";
-	} else { // Si el usuario ESTÁ verificado
-		$sql = "INSERT INTO alquileres (usuario_id, titulo, descripcion, ubicacion, etiquetas, costo_alquiler, tiempo_minimo, tiempo_maximo, cupo, fecha_inicio, fecha_fin, activa, fecha_publicacion) 
-		VALUES ('$usuario_id', '$titulo', '$descripcion', '$ubicacion', '$etiquetas', '$costo_alquiler', '$tiempo_minimo', '$tiempo_maximo', '$cupo', '$fecha_inicio', '$fecha_fin', 1, '$fecha_actual')";
-	}
-
-
-        if (mysqli_query($conexion, $sql)) {
-            $id_oferta = mysqli_insert_id($conexion);
-
-			// Verificar si el usuario es regular o verificado
-			$consulta_usuario = "SELECT verificado FROM usuarios WHERE id = $usuario_id";
-			$resultado_usuario = mysqli_query($conexion, $consulta_usuario);
-			$usuario = mysqli_fetch_assoc($resultado_usuario);
+            $usuario_id = $_SESSION["id"];
 
             $galeria_fotos = array();
-
             if (!empty($_FILES["fotos"]["name"][0])) {
                 $total = count($_FILES["fotos"]["name"]);
                 for ($i = 0; $i < $total; $i++) {
                     $nombre_archivo = $_FILES["fotos"]["name"][$i];
+                    $ruta_temporal = $_FILES["fotos"]["tmp_name"][$i];
                     $ruta_archivo = "galeria/" . uniqid() . "_" . $nombre_archivo;
 
-                    $imagen_redimensionada = redimensionarImagen($_FILES["fotos"]["tmp_name"][$i], 1200, 800);
-
-                    if (!$imagen_redimensionada) {
-                        echo '<div class="alert alert-danger" role="alert">Tipo de imagen no soportado.</div>';
-                        continue;
-                    }
-
-                    if (imagejpeg($imagen_redimensionada, $ruta_archivo, 85)) {
+                    if (move_uploaded_file($ruta_temporal, $ruta_archivo)) {
                         $galeria_fotos[] = $ruta_archivo;
                     }
-
-                    imagedestroy($imagen_redimensionada);
                 }
             }
+            $galeria_json = json_encode($galeria_fotos);
 
-            if (!empty($galeria_fotos)) {
-                $galeria_json = json_encode($galeria_fotos);
-                $sql = "UPDATE alquileres SET galeria_fotos = ? WHERE id = ?";
+            $consulta_verificado = "SELECT verificado FROM usuarios WHERE id = $usuario_id";
+            $resultado_verificado = mysqli_query($conexion, $consulta_verificado);
+            $usuario = mysqli_fetch_assoc($resultado_verificado);
+
+            if ($usuario['verificado'] == 0) {
+                $consulta_oferta_activa = "SELECT COUNT(*) as total FROM alquileres WHERE usuario_id = $usuario_id AND activa = 1";
+                $resultado_oferta_activa = mysqli_query($conexion, $consulta_oferta_activa);
+                $oferta_activa = mysqli_fetch_assoc($resultado_oferta_activa);
+
+                if ($oferta_activa['total'] > 0) {
+                    echo '<div class="alert alert-danger mt-4" role="alert">';
+                    echo "<div class='text-center'>Ya tienes una oferta activa. No puedes crear otra hasta que la oferta actual expire o la desactives.</div>";
+                    echo '</div>';
+                    require_once('footer.php');
+                    exit;
+                }
+                $sql = "INSERT INTO alquileres (usuario_id, titulo, descripcion, ubicacion, etiquetas, costo_alquiler, tiempo_minimo, tiempo_maximo, cupo, fecha_inicio, fecha_fin, activa, galeria_fotos) 
+                VALUES ('$usuario_id', '$titulo', '$descripcion', '$ubicacion', '$etiquetas', '$costo_alquiler', '$tiempo_minimo', '$tiempo_maximo', '$cupo', '$fecha_inicio', '$fecha_fin', 0, '$galeria_json')";
+            } else {
+                $sql = "INSERT INTO alquileres (usuario_id, titulo, descripcion, ubicacion, etiquetas, costo_alquiler, tiempo_minimo, tiempo_maximo, cupo, fecha_inicio, fecha_fin, activa, galeria_fotos) 
+                VALUES ('$usuario_id', '$titulo', '$descripcion', '$ubicacion', '$etiquetas', '$costo_alquiler', '$tiempo_minimo', '$tiempo_maximo', '$cupo', '$fecha_inicio', '$fecha_fin', 1, '$galeria_json')";
+            }
+
+            if (mysqli_query($conexion, $sql)) {
+                $id_oferta = mysqli_insert_id($conexion);
+                $servicios_seleccionados = isset($_POST["servicios"]) ? $_POST["servicios"] : [];
+                $servicios_json = json_encode($servicios_seleccionados);
+
+                $sql = "UPDATE alquileres SET servicios = ? WHERE id = ?";
                 if ($stmt = mysqli_prepare($conexion, $sql)) {
-                    mysqli_stmt_bind_param($stmt, "si", $galeria_json, $id_oferta);
+                    mysqli_stmt_bind_param($stmt, "si", $servicios_json, $id_oferta);
                     mysqli_stmt_execute($stmt);
                     mysqli_stmt_close($stmt);
                 }
+
+                echo '<div class="alert alert-success text-center" role="alert">La oferta se ha creado exitosamente.</div>';
+            } else {
+                echo '<div class="alert alert-danger" role="alert">Error al crear la oferta: ' . mysqli_error($conexion) . '</div>';
             }
-
-            // Procesar los servicios seleccionados
-            $servicios_seleccionados = isset($_POST["servicios"]) ? $_POST["servicios"] : [];
-            $servicios_json = json_encode($servicios_seleccionados);
-
-            // Actualizar el campo 'servicios' en la base de datos
-            $sql = "UPDATE alquileres SET servicios = ? WHERE id = ?";
-            if ($stmt = mysqli_prepare($conexion, $sql)) {
-                mysqli_stmt_bind_param($stmt, "si", $servicios_json, $id_oferta);
-                mysqli_stmt_execute($stmt);
-                mysqli_stmt_close($stmt);
-            }
-
-            echo '<div class="alert alert-success text-center" role="alert">La oferta se ha creado exitosamente.</div>';
-        } else {
-            echo '<div class="alert alert-danger" role="alert">Error al crear la oferta: ' . mysqli_error($conexion) . '</div>';
         }
     }
-    ?>
+?>
     
     <div class="container mt-4">
         <h1 class="text">Crear Nueva Oferta de Alquiler</h1>
@@ -239,9 +194,9 @@
                 </div>
             </div>
 
-            <div class="form-group">
-                <label for="fotos">Fotos de la Galería (1200x800 píxeles)</label>
-                <input type="file" class="form-control-file" id="fotos" name="fotos[]" accept="image/*" multiple required>
+            <div class="form-group text-center">
+                <label for="fotos">Fotos de la Galería</label>
+                <input type="file" class="form-control-file" id="fotos" name="fotos[]" accept="image/jpeg, image/png, image/avif, image/webp" multiple required>
             </div>
             
             <div class="text-center">
