@@ -49,6 +49,27 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $stmt_colision->execute();
     $resultado_colision = $stmt_colision->get_result();
 
+	// Verificar si el usuario ya tiene una reserva pendiente o aceptada y no está verificado
+	if ($es_verificado == 0) { // Si el usuario no está verificado
+		$query_reserva = "SELECT * FROM aplicaciones_alquiler WHERE usuario_id = ? AND (estado = 'aceptado' OR estado = 'pendiente')";
+		$stmt_reserva = $conexion->prepare($query_reserva);
+		$stmt_reserva->bind_param("i", $usuario_id);
+		$stmt_reserva->execute();
+		$resultado_reserva = $stmt_reserva->get_result();
+	
+		if ($resultado_reserva->num_rows > 0) {
+			// El usuario ya tiene una reserva pendiente o aceptada
+			echo '<div class="container mt-4">';
+			echo '<div class="alert alert-danger text-center" role="alert">Ya aplicaste a una oferta de alquiler. Solo puedes aplicar a una oferta de alquiler a la vez por ser usuario regular.</div>';
+			echo '<div class="text-center"><a href="reservar.php?id=' . $alquiler_id . '" class="btn btn-primary">Volver a reservar</a></div>';
+			echo '</div>';
+			include 'footer.php';
+			exit;
+		}
+		$stmt_reserva->close();
+	}
+
+
     if ($resultado_colision->num_rows > 0) {
         // Hay una colisión
         echo '<div class="container mt-4">';
