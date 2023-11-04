@@ -10,11 +10,16 @@ mysqli_query($conexion, $sql_update);
 if (isset($_SESSION["id"])) {
     $usuario_id = $_SESSION["id"];
 
-    // Primero, verifica si la fecha de finalización coincide con la fecha actual
-    $query = "SELECT aplicaciones_alquiler.alquiler_id, alquileres.titulo 
-          FROM aplicaciones_alquiler 
-          INNER JOIN alquileres ON aplicaciones_alquiler.alquiler_id = alquileres.id 
-          WHERE aplicaciones_alquiler.usuario_id = ? AND aplicaciones_alquiler.fecha_fin >= CURDATE() AND aplicaciones_alquiler.estado = 'completado'";
+    // Consulta combinada para verificar la finalización del alquiler y si el usuario ha dejado una reseña,
+    // además de verificar si el usuario está verificado.
+    $query = "SELECT a.alquiler_id, al.titulo, 
+              (SELECT r.id FROM resenia r WHERE r.id_usuario = a.usuario_id AND r.id_oferta = a.alquiler_id LIMIT 1) AS resenia_id,
+              u.verificado
+          FROM aplicaciones_alquiler a
+          INNER JOIN alquileres al ON a.alquiler_id = al.id
+          INNER JOIN usuarios u ON a.usuario_id = u.id
+          WHERE a.usuario_id = ? AND a.fecha_fin >= CURDATE() AND a.estado = 'completado' AND u.verificado = 1
+          LIMIT 1";
     $stmt = $conexion->prepare($query);
     $stmt->bind_param("i", $usuario_id);
     $stmt->execute();
@@ -23,21 +28,14 @@ if (isset($_SESSION["id"])) {
     if ($row = $result->fetch_assoc()) {
         $alquiler_id = $row['alquiler_id'];
         $titulo_alquiler = $row['titulo'];
+        $resenia_id = $row['resenia_id'];
+        $verificado = $row['verificado'];
 
-        // Ahora, verifica si ya existe una reseña del usuario para esa oferta de alquiler
-        $query_resena = "SELECT id FROM resenia WHERE id_usuario = ? AND id_oferta = ?";
-        $stmt_resena = $conexion->prepare($query_resena);
-        $stmt_resena->bind_param("ii", $usuario_id, $alquiler_id);
-        $stmt_resena->execute();
-        $result_resena = $stmt_resena->get_result();
-
-        // Si no hay resultados, significa que el usuario aún no ha dejado una reseña
-        if (!$result_resena->fetch_assoc()) {
+        // Si el usuario no ha dejado una reseña y está verificado, se muestra la opción de dejar una reseña
+        if (empty($resenia_id) && $verificado) {
             $mensaje_resena = "<div class='text-center'>¿Qué te ha parecido <b>{$titulo_alquiler}</b>? <a href='detalles_alquiler.php?id={$alquiler_id}#reseñas'>¡Haz clic aquí para dejar una reseña!</a></div>";
             echo "<div class='alert alert-info'>{$mensaje_resena}</div>";
         }
-
-        $stmt_resena->close();
     }
 
     $stmt->close();
