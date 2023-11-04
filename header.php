@@ -90,6 +90,7 @@
         </nav>
         <!-- Navbar -->
 		<?php
+		//Quitar verificado si hoy es el día de vencimiento
 		$fecha_actual = date("Y-m-d");
 		$query = "UPDATE usuarios SET verificado = 0, fecha_verificacion = NULL WHERE fecha_verificacion = ?";
 		$stmt = $conexion->prepare($query);
