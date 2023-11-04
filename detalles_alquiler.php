@@ -99,37 +99,46 @@ if (isset($_GET["id"]) && is_numeric($_GET["id"])) {
         }
     }
 
-	// Verificar si el usuario puede dejar una reseña basado en la fecha de finalización
-	$usuario_id = $_SESSION['id'];
-	$query = "SELECT aplicaciones_alquiler.alquiler_id, alquileres.titulo 
-			FROM aplicaciones_alquiler 
-			INNER JOIN alquileres ON aplicaciones_alquiler.alquiler_id = alquileres.id 
-			WHERE aplicaciones_alquiler.usuario_id = ? AND aplicaciones_alquiler.alquiler_id = ? AND aplicaciones_alquiler.fecha_fin >= CURDATE()";
-	$stmt = $conexion->prepare($query);
-	$stmt->bind_param("ii", $usuario_id, $id_oferta);
-	$stmt->execute();
-	$result = $stmt->get_result();
-	
-	$puedeResenar = false;
-	if ($row = $result->fetch_assoc()) {
-		$alquiler_id = $row['alquiler_id'];
-		$titulo_alquiler = $row['titulo'];
-	
-		// Ahora, verifica si ya existe una reseña del usuario para esa oferta de alquiler
-		$query_resena = "SELECT id FROM resenia WHERE id_usuario = ? AND id_oferta = ?";
-		$stmt_resena = $conexion->prepare($query_resena);
-		$stmt_resena->bind_param("ii", $usuario_id, $alquiler_id);
-		$stmt_resena->execute();
-		$result_resena = $stmt_resena->get_result();
-	
-		// Si no hay resultados, significa que el usuario aún no ha dejado una reseña
-		if (!$result_resena->fetch_assoc()) {
-			$puedeResenar = true;
-		}
-	
-		$stmt_resena->close();
-	}
-	$stmt->close();
+	// Verificar si el usuario ya ha realizado una reseña en esta oferta y si está verificado
+$sql_verificar_resena_y_usuario = "SELECT COUNT(resenia.id) 
+    FROM resenia 
+    INNER JOIN usuarios ON resenia.id_usuario = usuarios.id 
+    WHERE resenia.id_oferta = ? AND resenia.id_usuario = ? AND usuarios.verificado = 1";
+
+$yaHaResenado = false;
+$puedeResenar = false;
+if ($stmt_verificar_resena_y_usuario = mysqli_prepare($conexion, $sql_verificar_resena_y_usuario)) {
+    mysqli_stmt_bind_param($stmt_verificar_resena_y_usuario, "ii", $id_oferta, $_SESSION['id']);
+    if (mysqli_stmt_execute($stmt_verificar_resena_y_usuario)) {
+        mysqli_stmt_bind_result($stmt_verificar_resena_y_usuario, $num_resenas);
+        mysqli_stmt_fetch($stmt_verificar_resena_y_usuario);
+        if ($num_resenas > 0) {
+            // El usuario ya ha realizado una reseña, mostrar un mensaje
+            $yaHaResenado = true;
+        }
+        mysqli_stmt_close($stmt_verificar_resena_y_usuario);
+    }
+}
+
+// Verificar si el usuario puede dejar una reseña basado en la fecha de finalización y si está verificado
+if (!$yaHaResenado) {
+    $query_puede_resenar = "SELECT COUNT(*) 
+        FROM aplicaciones_alquiler 
+        INNER JOIN usuarios ON aplicaciones_alquiler.usuario_id = usuarios.id 
+        WHERE aplicaciones_alquiler.usuario_id = ? AND aplicaciones_alquiler.alquiler_id = ? 
+        AND aplicaciones_alquiler.fecha_fin <= CURDATE() AND usuarios.verificado = 1";
+
+    if ($stmt_puede_resenar = mysqli_prepare($conexion, $query_puede_resenar)) {
+        mysqli_stmt_bind_param($stmt_puede_resenar, "ii", $_SESSION['id'], $id_oferta);
+        if (mysqli_stmt_execute($stmt_puede_resenar)) {
+            mysqli_stmt_bind_result($stmt_puede_resenar, $num_aplicaciones);
+            mysqli_stmt_fetch($stmt_puede_resenar);
+            // Si hay al menos una aplicación que cumpla las condiciones, el usuario puede dejar una reseña
+            $puedeResenar = ($num_aplicaciones > 0);
+            mysqli_stmt_close($stmt_puede_resenar);
+        }
+    }
+}
 
 
     // Si se presiona el botón "Eliminar Reseña"
