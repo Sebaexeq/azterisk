@@ -193,5 +193,5 @@ for ($i = 1; $i <= $totalPaginas; $i++) {
 }
 echo '</ul>';
 echo '</nav>';
-echo '</div>'; // Cierre del div container
+echo '</div>';
 ?>
