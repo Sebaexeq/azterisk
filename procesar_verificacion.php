@@ -15,7 +15,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         exit;
     }
 
-    // Verificar tipos de archivo (en este ejemplo solo permitimos jpeg, jpg y png)
+    // Verificar tipos de archivo
     $allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
     foreach (['dni_frente', 'dni_dorso', 'selfie'] as $filename) {
         if (!in_array($_FILES[$filename]["type"], $allowedTypes)) {
