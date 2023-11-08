@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="icon" type="image/x-icon" href="favicon.ico">
     <title>Detalles de la Oferta de Alquiler</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/css/bootstrap.min.css">
 	<link rel="stylesheet" href="estilos/estilo.css">
@@ -207,7 +208,7 @@ if (!$yaHaResenado) {
 					echo '<div class="alert alert-danger" role="alert">Esta oferta de alquiler a la que intentas acceder está inactiva.</div>';
 					echo '</div>';
 					include('footer.php');
-					exit(); // Termina la ejecución del script aquí
+					exit();
 				}
 
                 echo '<div class="container mt-4">';
@@ -370,33 +371,33 @@ if (!$yaHaResenado) {
                 $galeria_fotos = json_decode($fila["galeria_fotos"]);
                 if (!empty($galeria_fotos)) { ?>
                     <div class="container mt-4">
-    <h2>Galería de Fotos</h2>
-    <div id="fotoCarousel" class="carousel slide" data-bs-ride="carousel">
-        <div class="carousel-inner">
-            <?php
-            $primer = true;
-            foreach ($galeria_fotos as $key => $foto) {
-                echo '<div class="carousel-item';
-                if ($primer) {
-                    echo ' active';
-                    $primer = false;
-                }
-                echo '">';
-                echo '<img src="' . htmlspecialchars($foto) . '" class="d-block w-100" alt="Foto">';
-                echo '</div>';
-            }
-            ?>
-        </div>
-        <a class="carousel-control-prev" href="#fotoCarousel" role="button" data-bs-slide="prev">
-            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-            <span class="visually-hidden">Previous</span>
-        </a>
-        <a class="carousel-control-next" href="#fotoCarousel" role="button" data-bs-slide="next">
-            <span class="carousel-control-next-icon" aria-hidden="true"></span>
-            <span class="visually-hidden">Next</span>
-        </a>
-    </div>
-</div>
+						<h2>Galería de Fotos</h2>
+						<div id="fotoCarousel" class="carousel slide" data-bs-ride="carousel">
+							<div class="carousel-inner">
+								<?php
+								$primer = true;
+								foreach ($galeria_fotos as $key => $foto) {
+									echo '<div class="carousel-item';
+									if ($primer) {
+										echo ' active';
+										$primer = false;
+									}
+									echo '">';
+									echo '<img src="' . htmlspecialchars($foto) . '" class="d-block w-100" alt="Foto">';
+									echo '</div>';
+								}
+								?>
+							</div>
+							<a class="carousel-control-prev" href="#fotoCarousel" role="button" data-bs-slide="prev">
+								<span class="carousel-control-prev-icon" aria-hidden="true"></span>
+								<span class="visually-hidden">Previous</span>
+							</a>
+							<a class="carousel-control-next" href="#fotoCarousel" role="button" data-bs-slide="next">
+								<span class="carousel-control-next-icon" aria-hidden="true"></span>
+								<span class="visually-hidden">Next</span>
+							</a>
+						</div>
+					</div>
                 <?php }
 
                 echo '<div id="reseñas" class="container mt-4">';
