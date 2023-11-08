@@ -11,7 +11,7 @@ if (!isset($_SESSION["id"])) {
 $mensaje = "";
 $mensaje_clase = "";
 
-$usuario_id = $_SESSION['id']; // Asumiendo que el ID del usuario está almacenado en la sesión
+$usuario_id = $_SESSION['id'];
 $sql = "SELECT verificado FROM usuarios WHERE id = ?";
 $stmt = $conexion->prepare($sql);
 $stmt->bind_param("i", $usuario_id);
@@ -103,7 +103,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             mysqli_stmt_close($stmt);
         }
     } elseif (empty($contraseña_nueva) && empty($confirmar_contraseña)) {
-        // Si no se proporciona una nueva contraseña y no se confirma, no actualices la contraseña.
+        // Si no se proporciona una nueva contraseña y no se confirma, no se actualizará la contraseña.
         $sql = "UPDATE usuarios SET nombre = ?, apellido = ?, email = ?, bio = ?, intereses = ? WHERE id = ?";
         if ($stmt = mysqli_prepare($conexion, $sql)) {
             mysqli_stmt_bind_param($stmt, "sssssi", $nombre_nuevo, $apellido_nuevo, $email_nuevo, $bio_nueva, $intereses_nuevos, $usuario_id);
@@ -156,6 +156,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <head>
     <title>Editar Perfil</title>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+	<link rel="icon" type="image/x-icon" href="favicon.ico">
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.min.js"></script>
     <link href="estilos/estilo.css" rel="stylesheet">
