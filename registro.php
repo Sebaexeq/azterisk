@@ -1,8 +1,5 @@
 <?php
-// Configuración de la base de datos
 require_once 'config.php';
-
-// Iniciar la sesión
 session_start();
 
 // Verificar si el usuario ya ha iniciado sesión, en cuyo caso redirige al perfil
@@ -87,10 +84,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 <head>
     <title>Registro</title>
-    <!-- Agregar los enlaces a los estilos de Bootstrap 5 -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/css/bootstrap.min.css">
-
-    <!-- Estilos personalizados para la paleta de colores -->
+	<link rel="icon" type="image/x-icon" href="favicon.ico">
     <style>
         /* Estilos para la paleta de colores */
         body {
@@ -205,4 +200,5 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.min.js"></script>
 </body>
+
 </html>
