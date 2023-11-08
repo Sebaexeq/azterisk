@@ -12,10 +12,9 @@ if (isset($_GET["id"]) && is_numeric($_GET["id"])) {
     $id_usuario_mostrar = $_GET["id"];
 }
 
-// Incluyendo la conexión a la base de datos
 include 'config.php';
 
-// Consulta para obtener la información del usuario
+// Consulta para obtener la informaci贸n del usuario
 $sql = "SELECT * FROM usuarios WHERE id = ?";
 $stmt = $conexion->prepare($sql);
 $stmt->bind_param("i", $id_usuario_mostrar);
@@ -46,16 +45,14 @@ $stmt_alquileres = $conexion->prepare($sql_alquileres);
 $stmt_alquileres->bind_param("i", $id_usuario_mostrar);
 $stmt_alquileres->execute();
 $ofertas = $stmt_alquileres->get_result();
-
 ?>
 
 <!DOCTYPE html>
 <html>
 <head>
     <title>Perfil de Usuario</title>
-    <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Google Fonts -->
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
@@ -146,36 +143,34 @@ div.card-body .btn-enviar:hover {
 
     <div class="container mt-5">
     <div class="row">
-        <!-- Tarjeta del lado izquierdo (foto de perfil) -->
-<div class="col-md-3">
-    <div class="card"> 
-        <div class="card-body text-center">
-            <img src="<?php echo $foto_perfil; ?>" alt="Foto de Perfil" class="img-fluid rounded-circle mb-3" width="150">
-            <h4><?php echo $nombre . ' ' . $apellido; ?></h4>
-            <?php 
-            echo ($usuario["verificado"] == 1) ? '<img height=40 width=40 src="verified.png" title="Usuario verificado">' : '';
-            echo ($es_admin == 1) ? ' <img height=40 width=40 src="admin.png" title="Administrador">' : ''; 
-            ?>
-        </div>
-    </div>
-<?php
-// Consulta para verificar si el usuario tiene una solicitud de verificación pendiente
-$query_verificacion = "SELECT * FROM verificaciones WHERE usuario_id = ?";
-$stmt_verificacion = $conexion->prepare($query_verificacion);
-$stmt_verificacion->bind_param("i", $id_usuario_mostrar);
-$stmt_verificacion->execute();
-$result_verificacion = $stmt_verificacion->get_result();
-$esperando_verificacion = ($result_verificacion->num_rows > 0);
-$stmt_verificacion->close();
-?>
-
-	<!-- Formulario de verificación -->
+		<div class="col-md-3">
+			<div class="card"> 
+				<div class="card-body text-center">
+					<img src="<?php echo $foto_perfil; ?>" alt="Foto de Perfil" class="img-fluid rounded-circle mb-3" width="150">
+					<h4><?php echo $nombre . ' ' . $apellido; ?></h4>
+					<?php 
+					echo ($usuario["verificado"] == 1) ? '<img height=40 width=40 src="verified.png" title="Usuario verificado">' : '';
+					echo ($es_admin == 1) ? ' <img height=40 width=40 src="admin.png" title="Administrador">' : ''; 
+					?>
+				</div>
+			</div>
+	<?php
+	// Consulta para verificar si el usuario tiene una solicitud de verificaci贸n pendiente
+	$query_verificacion = "SELECT * FROM verificaciones WHERE usuario_id = ?";
+	$stmt_verificacion = $conexion->prepare($query_verificacion);
+	$stmt_verificacion->bind_param("i", $id_usuario_mostrar);
+	$stmt_verificacion->execute();
+	$result_verificacion = $stmt_verificacion->get_result();
+	$esperando_verificacion = ($result_verificacion->num_rows > 0);
+	$stmt_verificacion->close();
+	?>
+	<!-- Formulario de verificaci贸n -->
 	<?php if ($id_usuario_mostrar == $_SESSION["id"]): ?>
 	<div class="container-verification">
 		<?php if ($usuario["verificado"] == 0): ?>
 			<?php if ($esperando_verificacion): ?>
 				
-				<div class="text-center"><div class="alert alert-info mt-4">Esperando verificación.</div></div>
+				<div class="text-center"><div class="alert alert-info mt-4">Esperando verificaci贸n.</div></div>
 			<?php else: ?>
 			<div class="card mt-4">
 				<div class="card-header text-white text-center">
@@ -185,32 +180,32 @@ $stmt_verificacion->close();
 					<form action="procesar_verificacion.php" method="post" enctype="multipart/form-data">
 						<div class="upload-box mb-3">
 							<label class="upload-label" for="dni_frente">Foto Frente DNI</label>
-							<span class="upload-icon">📎</span>
+							<span class="upload-icon">馃搸</span>
 							<input type="file" id="dni_frente" name="dni_frente" class="upload-input">
 						</div>
 						
 						<div class="upload-box mb-3">
 							<label class="upload-label" for="dni_dorso">Foto Dorso DNI</label>
-							<span class="upload-icon">📎</span>
+							<span class="upload-icon">馃搸</span>
 							<input type="file" id="dni_dorso" name="dni_dorso" class="upload-input">
 						</div>
 						
 						<div class="upload-box mb-3">
 							<label class="upload-label" for="selfie">Selfie</label>
-							<span class="upload-icon">📸</span>
+							<span class="upload-icon">馃摳</span>
 							<input type="file" id="selfie" name="selfie" class="upload-input">
 						</div>
 						<div class="text-center">
-						<button type="submit" class="btn btn-primary btn-enviar">Enviar Documentación</button>
+						<button type="submit" class="btn btn-primary btn-enviar">Enviar Documentaci贸n</button>
 						</div>
 					</form>
 				</div>
 			</div>
 			<?php endif; ?>
-<?php endif; ?>
-<br>
-			<?php
-        // Muestra el mensaje de error o éxito
+			<?php endif; ?>
+			<br>
+		<?php
+        // Muestra el mensaje de error o 茅xito
         if (isset($_GET['error'])) {
             echo '<div class="alert alert-danger">' . htmlspecialchars($_GET['error']) . '</div>';
         }
@@ -224,7 +219,6 @@ $stmt_verificacion->close();
 		<?php endif; ?>
 
 		</div>
-        <!-- Tarjeta del lado derecho (perfil de usuario y ofertas de alquiler) -->
         <div class="col-md-9">
             <div class="card mb-4"> 
                 <div class="card-header bg-personalizado text-white">
@@ -236,7 +230,7 @@ $stmt_verificacion->close();
                         <p><?php echo $intereses; ?></p>
                     </div>
                     <div>
-                        <h5>Biografía</h5>
+                        <h5>Biograf铆a</h5>
                         <p><?php echo $bio; ?></p>
                     </div>
                 </div>
@@ -250,14 +244,37 @@ $stmt_verificacion->close();
 					<?php if ($ofertas->num_rows > 0): ?>
 						<div class="list-group">
 							<?php while ($oferta = $ofertas->fetch_assoc()): ?>
+							<?php
+							$oferta_id = $oferta["id"];
+							$query_solicitudes = "SELECT estado, COUNT(*) as cantidad FROM aplicaciones_alquiler WHERE alquiler_id = ? GROUP BY estado";
+							$stmt_solicitudes = $conexion->prepare($query_solicitudes);
+							$stmt_solicitudes->bind_param("i", $oferta_id);
+							$stmt_solicitudes->execute();
+							$resultado_solicitudes = $stmt_solicitudes->get_result();
+							$solicitudes = [];
+							while ($row = $resultado_solicitudes->fetch_assoc()) {
+								$solicitudes[$row['estado']] = $row['cantidad'];
+							}
+							$stmt_solicitudes->close();
+							?>
+
 								<a href="detalles_alquiler.php?id=<?php echo $oferta["id"]; ?>" class="list-group-item list-group-item-action mb-0">
 									<div class="d-flex w-100 justify-content-between">
 										<h5 class="mb-1">
 											<?php echo $oferta["titulo"]; ?>
-											<!-- Muestra el badge si la oferta está inactiva y el usuario es el dueño del perfil -->
+											<!-- Muestra el badge si la oferta est谩 inactiva y el usuario es el due帽o del perfil -->
 											<?php if ($oferta["activa"] == 0 && $id_usuario_mostrar == $_SESSION["id"]): ?>
 												<span class="badge bg-secondary">Inactiva</span>
 											<?php endif; ?>
+											<?php
+											if (isset($solicitudes['pendiente'])) {
+												echo '<span class="badge bg-warning">' . $solicitudes['pendiente'] . ' pendientes</span> ';
+											}
+											
+											
+											if (isset($solicitudes['aceptado'])) {
+												echo '<span class="badge bg-success">' . $solicitudes['aceptado'] . ' aceptados</span> ';
+											}?>
 										</h5>
 										<small>
 											<?php 
