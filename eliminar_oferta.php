@@ -1,6 +1,6 @@
 <?php
 session_start();
-require_once('config.php'); // Incluye el archivo de configuración de la base de datos
+require_once('config.php');
 
 // Verificar si el usuario ha iniciado sesión
 if (!isset($_SESSION["id"])) {
@@ -57,6 +57,5 @@ if (isset($_GET['id']) && is_numeric($_GET['id'])) {
     echo '<div class="container mt-5"><p>Parámetro de ID de alquiler no válido.</p></div>';
 }
 
-// Incluye el pie de página
 require_once('footer.php');
 ?>
