@@ -1,5 +1,4 @@
 <?php
-// Incluir el archivo de configuración de la base de datos
 include('config.php');
 
 // Verificar si la sesión está activa y si el usuario es administrador
@@ -177,16 +176,12 @@ $fecha_manana = date("Y-m-d", strtotime("+1 day"));
                     echo '<button type="submit" class="btn btn-primary">Guardar</button>';
                     echo '</form>';
                     echo '<button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal" data-userid="' . $row['id'] . '">Eliminar Usuario</button>';
-                    
-                    // Agregar botón para ver ofertas del usuario
                     echo '<a href="ver_ofertas.php?user_id=' . $row['id'] . '" class="btn btn-info">Ver Ofertas</a>';
-                    // Agregar el botón "Ver solicitud" aquí
 					$query_verificacion = "SELECT * FROM verificaciones WHERE usuario_id = " . $row['id'];
 					$result_verificacion = mysqli_query($conexion, $query_verificacion);
 					if (mysqli_num_rows($result_verificacion) > 0) {
 						echo '<a href="ver_solicitud.php?usuario_id=' . $row['id'] . '" class="btn btn-warning">Ver Solicitud</a>';
 					} else {
-						// Si no hay solicitud, mostrar el botón en gris y deshabilitado
 						echo '<a href="#" class="btn btn-warning disabled">Ver Solicitud</a>';
 					}
                     echo '</div>';
