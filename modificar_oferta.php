@@ -1,7 +1,9 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+	<title>Modificar oferta</title>
     <link href="estilos/estilo.css" rel="stylesheet">
+	<link rel="icon" type="image/x-icon" href="favicon.ico">
 </head>
 <body>
 
@@ -64,7 +66,6 @@ if (isset($_GET["id"]) && is_numeric($_GET["id"])) {
 										$fotosSubidas = true;
 									}
 								} else {
-									// Puedes añadir un mensaje para informar al usuario que ciertas imágenes no tienen una extensión válida.
 									echo '<div class="alert alert-danger text-center">El archivo ' . $_FILES['fotos']['name'][$i] . ' no tiene una extensión válida. Se omitió.</div>';
 								}
 							}
