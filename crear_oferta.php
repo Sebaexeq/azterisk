@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="icon" type="image/x-icon" href="favicon.ico">
     <link href="estilos/estilo.css" rel="stylesheet">
     <title>Crear Nueva Oferta de Alquiler</title>
 </head>
@@ -206,7 +207,6 @@
     </div>
 
     <?php
-    // Incluye el pie de página
     require_once('footer.php');
     ?>
 </body>
