@@ -1,5 +1,4 @@
 <?php
-// Incluye el archivo de configuración de la base de datos
 require_once 'config.php';
 
 // Verifica si se ha enviado el formulario de registro
@@ -30,7 +29,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         echo "Error de preparación de la consulta.";
     }
 
-    // Cierra la conexión a la base de datos
     mysqli_close($conexion);
 }
 ?>
