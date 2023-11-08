@@ -1,5 +1,4 @@
 <?php
-// Incluir el archivo de configuración de la base de datos
 include('config.php');
 
 // Verificar si el usuario es un administrador
