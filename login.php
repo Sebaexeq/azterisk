@@ -1,8 +1,5 @@
 <?php
-// Incluye el archivo de configuración de la base de datos
 require_once 'config.php';
-
-// Inicia la sesión de usuario
 session_start();
 
 // Verifica si el usuario ya ha iniciado sesión, en cuyo caso redirige al perfil
@@ -61,9 +58,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Iniciar Sesión</title>
-    <!-- Agregar los enlaces a los estilos de Bootstrap 5 -->
+    <title>Iniciar sesión</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/css/bootstrap.min.css">
+	<link rel="icon" type="image/x-icon" href="favicon.ico">
 	<style>
         /* Estilos para la paleta de colores */
         body {
@@ -140,11 +137,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             </div>
         </div>
     </div>
-
-    <!-- Incluir el pie de página -->
     <?php require_once('footer.php'); ?>
-
-    <!-- Agregar los enlaces a los scripts de Bootstrap 5 -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.min.js"></script>
