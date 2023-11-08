@@ -1,5 +1,4 @@
 <?php
-// Incluye el archivo de configuración de la base de datos
 require_once 'config.php';
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
