@@ -1,0 +1,93 @@
+body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f4f4f4;
+        }
+        .card {
+            border-radius: 15px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .card-header {
+            border-radius: 15px 15px 0 0;
+        }
+        .img-fluid {
+            border: 3px solid #f4f4f4;
+        }
+        h2, h4, h5 {
+            font-weight: 500;
+        }
+		.card-header {
+		background-color: #DAC0A3 !important;
+		}
+		.container-verification {
+    font-family: Arial, sans-serif;
+    max-width: 300px;
+    margin: auto;
+}
+
+
+.upload-box {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 50px;
+    border: 2px dashed #c1c1c1;
+    border-radius: 5px;
+    margin-bottom: 15px;
+    position: relative;
+    cursor: pointer;
+    transition: border-color 0.2s;
+}
+
+.upload-box:hover {
+    border-color: #8a8a8a;
+}
+
+.upload-label {
+    z-index: 1;
+}
+
+.upload-icon {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 1;
+    color: #c1c1c1;
+    font-size: 18px;
+}
+
+.upload-input {
+    opacity: 0;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+    z-index: 0;
+}
+
+div.card-body .btn-enviar {
+    background-color: #DAC0A3;
+    color: #FFFFFF;
+    border: none;
+}
+
+div.card-body .btn-enviar:hover {
+    background-color: #C2B093;
+}
+
+.bg-success {
+    background-color: green;
+    color: white;
+}
+
+.bg-primary {
+    background-color: blue;
+    color: white;
+}
+
+.bg-warning {
+    background-color: yellow;
+    color: black;
+}
