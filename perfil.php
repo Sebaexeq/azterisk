@@ -267,12 +267,12 @@ div.card-body .btn-enviar:hover {
 												<span class="badge bg-secondary">Inactiva</span>
 											<?php endif; ?>
 											<?php
-											if (isset($solicitudes['pendiente'])) {
+											if (isset($solicitudes['pendiente']) && $id_usuario_mostrar == $_SESSION["id"]) {
 												echo '<span class="badge bg-warning">' . $solicitudes['pendiente'] . ' pendientes</span> ';
 											}
 											
 											
-											if (isset($solicitudes['aceptado'])) {
+											if (isset($solicitudes['aceptado']) && $id_usuario_mostrar == $_SESSION["id"]) {
 												echo '<span class="badge bg-success">' . $solicitudes['aceptado'] . ' aceptados</span> ';
 											}?>
 										</h5>
