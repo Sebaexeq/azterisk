@@ -436,7 +436,7 @@ if (!$yaHaResenado) {
 										} else {
 											if (isset($_SESSION['id']) && $_SESSION['id'] == $fila['usuario_id']) {
 												echo "
-												<div class='mt-3 border rounded p-3'>  <!-- Añade estas clases para el estilo de cuadro -->
+												<div class='mt-3 border rounded p-3'>
 													<h5>Responder a esta reseña:</h5>
 													<form action='procesar_respuestas.php' method='post' class='form-inline'>
 														<input type='hidden' name='id_resena' value='" . $fila_resena['id'] . "'>
