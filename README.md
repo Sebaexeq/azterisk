@@ -15,4 +15,4 @@ Contraseña: S3b4S7i4N
 Correo: maxi.illesca@hotmail.com
 Contraseña: S3b4S7i4N
 
-NOTA: En la carpeta database se encuentra la base de datos completa RapiBnB.sql a importar. También están las tablas sueltas vacías por separado con sus ejecuciones en caso de no querer la BD completa. No contienen alquileres, ni reservas, ni usuarios.
+NOTA: En la carpeta database se encuentra la base de datos completa RapiBnB.sql a importar. También están las tablas sueltas vacías por separado con sus ejecuciones en caso de no querer la BD completa. No contienen alquileres, ni reservas, ni usuarios. El contenido de la carpeta galeria no se pudo subir por las limitaciones de espacio en GitHub. Así que si ven imágenes rotas es por eso.
