@@ -90,6 +90,9 @@
         </nav>
         <!-- Navbar -->
 		<?php
+		$sql_update = "UPDATE aplicaciones_alquiler SET estado = 'completado' WHERE fecha_fin <= CURDATE() AND estado = 'aceptado'";
+		mysqli_query($conexion, $sql_update);
+		
 		//Quitar verificado si hoy es el día de vencimiento
 		$fecha_actual = date("Y-m-d");
 		$query = "UPDATE usuarios SET verificado = 0, fecha_verificacion = NULL WHERE fecha_verificacion = ?";
