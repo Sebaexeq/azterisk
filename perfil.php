@@ -45,6 +45,17 @@ $stmt_alquileres = $conexion->prepare($sql_alquileres);
 $stmt_alquileres->bind_param("i", $id_usuario_mostrar);
 $stmt_alquileres->execute();
 $ofertas = $stmt_alquileres->get_result();
+
+$sql_reservas = "
+    SELECT aa.*, a.titulo 
+    FROM aplicaciones_alquiler aa
+    JOIN alquileres a ON aa.alquiler_id = a.id
+    WHERE aa.usuario_id = ?
+    ORDER BY aa.fecha_inicio DESC";
+$stmt_reservas = $conexion->prepare($sql_reservas);
+$stmt_reservas->bind_param("i", $id_usuario_mostrar);
+$stmt_reservas->execute();
+$reservas = $stmt_reservas->get_result();
 ?>
 
 <!DOCTYPE html>
@@ -54,89 +65,10 @@ $ofertas = $stmt_alquileres->get_result();
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="icon" type="image/x-icon" href="favicon.ico">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="estilos/perfil.css" rel="stylesheet">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.min.js"></script>
-    <style>
-        body {
-            font-family: 'Poppins', sans-serif;
-            background-color: #f4f4f4;
-        }
-        .card {
-            border-radius: 15px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-        .card-header {
-            border-radius: 15px 15px 0 0;
-        }
-        .img-fluid {
-            border: 3px solid #f4f4f4;
-        }
-        h2, h4, h5 {
-            font-weight: 500;
-        }
-		.card-header {
-		background-color: #DAC0A3 !important;
-		}
-		.container-verification {
-    font-family: Arial, sans-serif;
-    max-width: 300px;
-    margin: auto;
-}
-
-
-.upload-box {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 50px;
-    border: 2px dashed #c1c1c1;
-    border-radius: 5px;
-    margin-bottom: 15px;
-    position: relative;
-    cursor: pointer;
-    transition: border-color 0.2s;
-}
-
-.upload-box:hover {
-    border-color: #8a8a8a;
-}
-
-.upload-label {
-    z-index: 1;
-}
-
-.upload-icon {
-    position: absolute;
-    right: 10px;
-    top: 50%;
-    transform: translateY(-50%);
-    z-index: 1;
-    color: #c1c1c1;
-    font-size: 18px;
-}
-
-.upload-input {
-    opacity: 0;
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    cursor: pointer;
-    z-index: 0;
-}
-
-div.card-body .btn-enviar {
-    background-color: #DAC0A3;
-    color: #FFFFFF;
-    border: none;
-}
-
-div.card-body .btn-enviar:hover {
-    background-color: #C2B093;
-}
-    </style>
 </head>
 <body>
     <?php include 'header.php'; ?>
@@ -236,6 +168,46 @@ div.card-body .btn-enviar:hover {
                 </div>
             </div>
 
+<?php if ($id_usuario_mostrar == $_SESSION["id"]): ?>
+				<div class="card mb-4"> 
+					<div class="card-header bg-personalizado text-white">
+						<h2>Mis Reservas</h2>
+					</div>
+					<div class="card-body">
+						<?php if ($reservas->num_rows > 0): ?>
+							<div class="list-group">
+								<?php while ($reserva = $reservas->fetch_assoc()): ?>
+									<a href="detalles_alquiler.php?id=<?php echo $reserva["alquiler_id"]; ?>" class="list-group-item list-group-item-action mb-0">
+										<div class="d-flex w-100 justify-content-between">
+											<h5 class="mb-1"><?php echo $reserva["titulo"]; ?></h5>
+											<p>Inicio: <?php echo $reserva["fecha_inicio"]; ?> - Fin: <?php echo $reserva["fecha_fin"]; ?></p>
+											<small>
+												<?php 
+												switch ($reserva["estado"]) {
+													case "completado":
+														echo '<span class="badge bg-success">Completada</span>';
+														break;
+													case "aceptado":
+														echo '<span class="badge bg-primary">Aceptada</span>';
+														break;
+													case "pendiente":
+														echo '<span class="badge bg-warning">Pendiente</span>';
+														break;
+												}
+												?>
+											</small>
+										</div>
+										
+									</a>
+								<?php endwhile; ?>
+							</div>
+						<?php else: ?>
+							<p>No tiene reservas.</p>
+						<?php endif; ?>
+					</div>
+				</div>
+			<?php endif; ?>
+		
             <div class="card"> 
                 <div class="card-header text-white bg-personalizado">
                     <h2>Ofertas de Alquiler</h2>
