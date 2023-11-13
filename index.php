@@ -2,10 +2,6 @@
 session_start();
 require_once 'config.php';
 include 'header.php';
-
-$sql_update = "UPDATE aplicaciones_alquiler SET estado = 'completado' WHERE fecha_fin = CURDATE() AND estado = 'aceptado'";
-mysqli_query($conexion, $sql_update);
-
 // Obtener el ID del usuario logueado
 if (isset($_SESSION["id"])) {
     $usuario_id = $_SESSION["id"];
