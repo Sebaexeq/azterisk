@@ -202,7 +202,7 @@ $reservas = $stmt_reservas->get_result();
 								<?php endwhile; ?>
 							</div>
 						<?php else: ?>
-							<p>No tiene reservas.</p>
+							<p>No has realizado reservas.</p>
 						<?php endif; ?>
 					</div>
 				</div>
